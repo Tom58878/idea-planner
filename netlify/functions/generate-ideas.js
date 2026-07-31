@@ -55,7 +55,7 @@ Génère exactement ${count || 30} idées de contenu variées et non répétitiv
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          system_instruction: { parts: [{ text: systemPrompt }] },
+          systemInstruction: { parts: [{ text: systemPrompt }] },
           contents: [{ parts: [{ text: userPrompt }] }]
         })
       }
@@ -63,13 +63,29 @@ Génère exactement ${count || 30} idées de contenu variées et non répétitiv
 
     if (!response.ok) {
       const errText = await response.text();
-      return { statusCode: 502, body: JSON.stringify({ error: "Erreur Gemini", detail: errText }) };
+      console.error("Erreur Gemini (HTTP " + response.status + "):", errText);
+      return {
+        statusCode: 502,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ error: "Erreur Gemini", detail: errText })
+      };
     }
 
     const data = await response.json();
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
     const clean = text.replace(/```json|```/g, "").trim();
-    const ideas = JSON.parse(clean);
+
+    let ideas;
+    try {
+      ideas = JSON.parse(clean);
+    } catch (parseErr) {
+      console.error("Erreur de parsing JSON. Texte reçu de Gemini:", text);
+      return {
+        statusCode: 502,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ error: "Réponse Gemini non-JSON", detail: text.slice(0, 500) })
+      };
+    }
 
     return {
       statusCode: 200,
@@ -77,6 +93,11 @@ Génère exactement ${count || 30} idées de contenu variées et non répétitiv
       body: JSON.stringify({ ideas })
     };
   } catch (e) {
-    return { statusCode: 500, body: JSON.stringify({ error: "Erreur serveur", detail: String(e) }) };
+    console.error("Erreur serveur inattendue:", e);
+    return {
+      statusCode: 500,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ error: "Erreur serveur", detail: String(e) })
+    };
   }
 };
