@@ -1,260 +1,139 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Le Planificateur</title>
-
-  <!-- 1. GOOGLE ANALYTICS -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-314N68PYLC"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-314N68PYLC');
-  </script>
-
-  <!-- 2. STRIPE SDK -->
-  <script src="https://js.stripe.com/v3/"></script>
-
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Le Planificateur d'Idées de Contenu</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
-
-    :root{
-      --cork-1:#7a5a3f;
-      --cork-2:#6b4d34;
-      --paper:#faf6ec;
-      --ink:#2b2420;
-      --ink-soft:#5b5049;
-      --pin-shadow: rgba(0,0,0,.45);
-      --gold:#e8b23d;
-      --ig:#c9558f;
-      --tiktok:#2bb8ac;
-      --yt:#d64545;
-      --li:#2f6fb0;
-    }
-
-    *{box-sizing:border-box;}
-    html, body{min-height:100%; margin:0; padding:0;}
-
-    .board-wrap{
-      font-family:'Inter',sans-serif;
-      color:var(--ink);
-      background:
-        radial-gradient(circle at 20% 15%, rgba(255,255,255,.06), transparent 40%),
-        radial-gradient(circle at 80% 85%, rgba(0,0,0,.12), transparent 45%),
-        repeating-linear-gradient(45deg, rgba(0,0,0,.03) 0px, rgba(0,0,0,.03) 2px, transparent 2px, transparent 6px),
-        linear-gradient(160deg, var(--cork-1), var(--cork-2));
-      border-radius:14px;
-      padding:28px 22px 40px;
-      min-height:100vh;
-    }
-
-    .board-header{ text-align:center; margin-bottom:26px; }
-    .board-title{
-      font-family:'Permanent Marker', cursive;
-      font-size:clamp(28px,4vw,42px);
-      color:var(--paper);
-      text-shadow:0 2px 0 rgba(0,0,0,.25);
-      margin:0 0 4px;
-      letter-spacing:.5px;
-    }
-    .board-sub{
-      color:rgba(250,246,236,.75);
-      font-size:14px;
-      font-weight:500;
-      max-width:480px;
-      margin:0 auto;
-    }
-
-    .card-form{
-      background:var(--paper);
-      max-width:640px;
-      margin:0 auto 34px;
-      padding:22px 24px 20px;
-      border-radius:3px;
-      position:relative;
-      box-shadow:0 10px 22px rgba(0,0,0,.35), 0 1px 0 rgba(255,255,255,.4) inset;
-      transform:rotate(-0.6deg);
-    }
-    .card-form::before{
-      content:'';
-      position:absolute; top:-11px; left:50%; transform:translateX(-50%);
-      width:18px; height:18px; border-radius:50%;
-      background:radial-gradient(circle at 35% 30%, #ff8a80, #b0201a 70%);
-      box-shadow:0 3px 6px var(--pin-shadow);
-    }
-
-    .form-row{margin-bottom:14px;}
-    .form-label{
-      display:block; font-size:12px; font-weight:700; text-transform:uppercase;
-      letter-spacing:.06em; color:var(--ink-soft); margin-bottom:6px;
-    }
-    .form-input, .form-select{
-      width:100%; padding:10px 12px; border:1.5px solid #d8cdb8; border-radius:6px;
-      font-family:'Inter',sans-serif; font-size:14.5px; background:#fff; color:var(--ink);
-    }
-    .form-input:focus, .form-select:focus{outline:2px solid var(--gold); outline-offset:1px; border-color:var(--gold);}
-
-    .secondary-params{ background:#f1ece0; border-radius:8px; padding:12px 14px 4px; margin-top:4px; }
-    .form-label-sm{ display:block; font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-soft); margin-bottom:4px; }
-    .form-select-sm{ width:100%; padding:7px 9px; border:1.5px solid #d8cdb8; border-radius:6px; font-family:'Inter',sans-serif; font-size:13px; background:#fff; color:var(--ink); }
-
-    .chip-row{display:flex; flex-wrap:wrap; gap:8px;}
-    .chip{
-      padding:7px 13px; border-radius:20px; border:1.5px solid #d8cdb8; background:#fff;
-      font-size:13px; font-weight:600; cursor:pointer; user-select:none;
-      display:flex; align-items:center; gap:6px; transition:transform .12s ease;
-    }
-    .chip:hover{transform:translateY(-1px);}
-    .chip[data-p="instagram"].on{background:var(--ig); border-color:var(--ig); color:#fff;}
-    .chip[data-p="tiktok"].on{background:var(--tiktok); border-color:var(--tiktok); color:#fff;}
-    .chip[data-p="youtube"].on{background:var(--yt); border-color:var(--yt); color:#fff;}
-    .chip[data-p="linkedin"].on{background:var(--li); border-color:var(--li); color:#fff;}
-    .chip-dot{width:8px;height:8px;border-radius:50%;background:#ccc;}
-    .chip.on .chip-dot{background:#fff;}
-
-    .pricing-grid{
-      display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:12px;
-      margin:20px 0 10px;
-    }
-    .price-card{
-      background:#fff; border:1.5px solid #d8cdb8; border-radius:8px; padding:14px;
-      text-align:center; position:relative; box-shadow:0 4px 10px rgba(0,0,0,.05);
-    }
-    .price-card.featured{ border-color:var(--gold); background:#fffdf5; }
-    .price-badge{
-      position:absolute; top:-10px; right:12px; background:var(--gold); color:#3a2a06;
-      font-size:9px; font-weight:800; text-transform:uppercase; padding:2px 8px; border-radius:10px;
-    }
-    .price-title{font-weight:700; font-size:14px; margin-bottom:4px;}
-    .price-val{font-size:20px; font-weight:800; color:var(--ink); margin-bottom:10px;}
-    .pay-btn{
-      width:100%; font-family:'Inter', sans-serif; font-size:12px; font-weight:700;
-      padding:8px 10px; border:none; border-radius:5px; background:var(--ink); color:#fff;
-      cursor:pointer; transition:background .15s ease;
-    }
-    .pay-btn:hover{background:var(--ink-soft);}
-    .pay-btn.featured-btn{background:var(--gold); color:#3a2a06;}
-    .pay-btn.featured-btn:hover{background:#d4a030;}
-
-    .form-bottom{display:flex; align-items:center; justify-content:center; margin-top:16px;}
-    .err-msg{color:#7a1f1f; font-size:13px; font-weight:600;}
-
-    .notes-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(280px,1fr)); gap:22px 18px; max-width:1100px; margin:0 auto; }
-    .note{ background:var(--paper); padding:16px 16px 14px; border-radius:2px; box-shadow:0 8px 16px rgba(0,0,0,.32); position:relative; min-height:180px; display:flex; flex-direction:column; }
-    .note::before{ content:''; position:absolute; top:-9px; left:50%; transform:translateX(-50%); width:14px; height:14px; border-radius:50%; box-shadow:0 3px 5px var(--pin-shadow); }
-    .note .day-idx{ font-family:'JetBrains Mono', monospace; font-size:11px; font-weight:700; color:var(--ink-soft); letter-spacing:.04em; margin-bottom:6px; }
-    .pillar-tag{ display:inline-block; font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.04em; padding:3px 9px; border-radius:9px; color:#fff; margin-bottom:8px; }
-    .pillar-tag.education{background:#2f6fb0;} .pillar-tag.storytelling{background:#3fa15a;} .pillar-tag.vente{background:#d64545;} .pillar-tag.viralite{background:#e8842e;}
+    * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background-color: #f5f5f7; margin: 0; padding: 20px; color: #333; }
+    .container { max-width: 900px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+    h1 { margin-top: 0; color: #111; text-align: center; }
+    p.subtitle { text-align: center; color: #666; margin-bottom: 30px; }
     
-    .block-label{ font-size:10.5px; font-weight:800; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-soft); margin:9px 0 3px; }
-    .hook-text{ font-size:13.5px; font-weight:700; color:var(--ink); line-height:1.4; background:#fff6d9; padding:6px 8px; border-radius:4px; border-left:3px solid var(--gold); }
-    .concept-text{font-size:12.5px; line-height:1.5; color:var(--ink-soft);}
-    .structure-list{margin:2px 0 0; padding-left:16px; font-size:12.5px; line-height:1.55; color:var(--ink-soft);}
-    .structure-list li{margin-bottom:2px;}
-    .cta-text{ font-size:12.5px; font-weight:700; color:var(--ink); background:#eee9dd; padding:6px 8px; border-radius:4px; margin-top:2px; }
-    .format-line{font-size:12px; color:var(--ink-soft); font-weight:600;}
-    .note-head{display:flex; justify-content:space-between; align-items:flex-start; gap:8px;}
-    .card-copy-btn{ background:none; border:none; cursor:pointer; font-size:15px; padding:2px 4px; border-radius:5px; color:var(--ink-soft); line-height:1; flex-shrink:0; }
-    .card-copy-btn:hover{background:#eee9dd; color:var(--ink);}
-    .platform-tags{display:flex; flex-wrap:wrap; gap:5px; margin-bottom:8px;}
-    .ptag{font-size:10.5px; font-weight:700; padding:3px 8px; border-radius:10px; color:#fff; text-transform:uppercase; letter-spacing:.03em;}
-    .ptag.instagram{background:var(--ig);} .ptag.tiktok{background:var(--tiktok);} .ptag.youtube{background:var(--yt);} .ptag.linkedin{background:var(--li);}
-
-    .toolbar{max-width:1100px; margin:0 auto 16px; display:flex; justify-content:flex-end; gap:10px;}
-    .copy-btn{ font-family:'Inter'; font-size:12.5px; font-weight:700; background:rgba(250,246,236,.9); border:none; border-radius:6px; padding:8px 14px; cursor:pointer; color:var(--ink); }
-    .copy-btn:hover{background:#fff;}
-    .loading-wrap{text-align:center; color:var(--paper); font-weight:600; font-size:14px; padding:30px 0;}
-
-    @media (max-width:480px){
-      .board-wrap{padding:20px 12px 30px;}
-      .card-form{padding:18px 16px 16px;}
-      .pricing-grid{grid-template-columns:1fr;}
-    }
+    .form-group { margin-bottom: 20px; }
+    label { display: block; font-weight: 600; margin-bottom: 8px; }
+    input[type="text"], select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; }
+    
+    .chips { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+    .chip { padding: 8px 16px; border: 1px solid #ddd; border-radius: 20px; cursor: pointer; user-select: none; background: #f9f9f9; }
+    .chip.on { background: #0071e3; color: white; border-color: #0071e3; }
+    
+    .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin: 30px 0; }
+    .price-card { border: 1px solid #e0e0e0; border-radius: 12px; padding: 20px; text-align: center; background: #fff; display: flex; flex-direction: column; justify-content: space-between; }
+    .price-card h3 { margin: 0 0 10px 0; }
+    .price-card .price { font-size: 24px; font-weight: bold; margin: 10px 0; color: #111; }
+    .price-card button { padding: 12px; border: none; border-radius: 8px; background: #0071e3; color: white; font-weight: bold; cursor: pointer; width: 100%; font-size: 15px; }
+    .price-card button:hover { background: #005bb5; }
+    .price-card button.secondary { background: #e5e5ea; color: #111; }
+    .price-card button.secondary:hover { background: #d1d1d6; }
+    
+    .error-msg { color: #d93025; text-align: center; font-weight: 600; margin: 15px 0; }
+    
+    .toolbar { display: none; justify-content: flex-end; margin-bottom: 15px; }
+    .toolbar button { padding: 8px 16px; border-radius: 6px; border: 1px solid #ccc; background: white; cursor: pointer; }
+    
+    .notes-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; margin-top: 20px; }
+    .note { background: #fffde7; padding: 20px; border-radius: 8px; box-shadow: 2px 4px 10px rgba(0,0,0,0.1); position: relative; border-left: 5px solid #ffd54f; }
+    .note-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+    .day-idx { font-size: 12px; font-weight: bold; color: #888; }
+    .pillar-tag { font-size: 11px; padding: 3px 8px; border-radius: 12px; background: #eee; font-weight: 600; text-transform: uppercase; }
+    .pillar-tag.vente { background: #ffebee; color: #c62828; }
+    .pillar-tag.storytelling { background: #e8eaf6; color: #283593; }
+    .pillar-tag.viralite { background: #f3e5f5; color: #6a1b9a; }
+    .pillar-tag.education { background: #e8f5e9; color: #2e7d32; }
+    
+    .card-copy-btn { background: none; border: none; cursor: pointer; font-size: 16px; }
+    .block-label { font-weight: bold; font-size: 12px; color: #555; margin-top: 10px; text-transform: uppercase; }
+    .hook-text { font-size: 15px; font-weight: 600; margin: 4px 0; }
+    .concept-text { font-size: 14px; margin: 4px 0; color: #444; }
+    .structure-list { margin: 4px 0; padding-left: 20px; font-size: 13px; color: #555; }
+    .format-line { font-size: 13px; font-style: italic; color: #666; margin-top: 6px; }
+    .cta-text { font-size: 13px; font-weight: 600; color: #0071e3; margin-top: 6px; }
+    .platform-tags { display: flex; gap: 4px; flex-wrap: wrap; }
+    .ptag { font-size: 10px; background: #e0e0e0; padding: 2px 6px; border-radius: 4px; }
+    
+    .loading-wrap { text-align: center; padding: 40px; font-size: 18px; color: #666; }
   </style>
 </head>
 <body>
 
-<div class="board-wrap">
-  <div class="board-header">
-    <h1 class="board-title">📌 Le Planificateur</h1>
-    <p class="board-sub">Ta niche, tes plateformes, 30 secondes plus tard : tes idées de contenu prêtes à tourner.</p>
-  </div>
+  <div class="container">
+    <h1>📌 Le Planificateur d'Idées</h1>
+    <p class="subtitle">Génère des concepts de contenu à fort impact pour tes réseaux sociaux.</p>
 
-  <div class="card-form">
-    <div class="form-row">
-      <label class="form-label" for="niche">Ta niche / ton sujet</label>
-      <input class="form-input" id="niche" placeholder="ex : coaching sportif, cuisine végétarienne..." />
+    <div class="form-group">
+      <label for="niche">Sujet / Niche :</label>
+      <input type="text" id="niche" placeholder="Ex: Musculation, Crypto, Boulangerie..." />
     </div>
 
-    <div class="form-row">
-      <label class="form-label">Plateformes</label>
-      <div class="chip-row" id="chipRow">
-        <div class="chip on" data-p="instagram"><span class="chip-dot"></span>Instagram</div>
-        <div class="chip on" data-p="tiktok"><span class="chip-dot"></span>TikTok</div>
-        <div class="chip" data-p="youtube"><span class="chip-dot"></span>YouTube</div>
-        <div class="chip" data-p="linkedin"><span class="chip-dot"></span>LinkedIn</div>
+    <div class="form-group">
+      <label>Plateformes :</label>
+      <div class="chips">
+        <div class="chip on" data-p="Instagram">Instagram</div>
+        <div class="chip on" data-p="TikTok">TikTok</div>
+        <div class="chip" data-p="LinkedIn">LinkedIn</div>
+        <div class="chip" data-p="YouTube">YouTube</div>
       </div>
     </div>
 
-    <div class="secondary-params">
-      <div class="form-row" style="display:flex; gap:14px; flex-wrap:wrap; margin-bottom:10px;">
-        <div style="flex:1; min-width:130px;">
-          <label class="form-label-sm" for="tone">Ton</label>
-          <select class="form-select-sm" id="tone">
-            <option>Fun et décontracté</option>
-            <option>Expert et pédagogue</option>
-            <option>Inspirant et motivant</option>
-            <option>Direct et sans filtre</option>
-          </select>
-        </div>
-        <div style="flex:1; min-width:130px;">
-          <label class="form-label-sm" for="focus">Objectif</label>
-          <select class="form-select-sm" id="focus">
-            <option value="balanced" selected>⚡ Équilibré (Recommandé)</option>
-            <option value="Storytelling">📖 Storytelling / Confiance</option>
-            <option value="Vente">🎯 Vente / Conversion</option>
-            <option value="Éducation">💡 Éducation / Expertise</option>
-            <option value="Viralité">🔥 Viralité / Engagement</option>
-          </select>
-        </div>
+    <div style="display: flex; gap: 15px;">
+      <div class="form-group" style="flex: 1;">
+        <label for="tone">Ton :</label>
+        <select id="tone">
+          <option value="Inspirant">Inspirant</option>
+          <option value="Educatif">Éducatif</option>
+          <option value="Humoristique">Humoristique</option>
+          <option value="Direct / Sans filtre">Direct / Sans filtre</option>
+        </select>
+      </div>
+      <div class="form-group" style="flex: 1;">
+        <label for="focus">Objectif principal :</label>
+        <select id="focus">
+          <option value="Notoriété">Notoriété / Engagement</option>
+          <option value="Vente">Vente / Conversion</option>
+          <option value="Fidélisation">Fidélisation</option>
+        </select>
       </div>
     </div>
 
-    <!-- 3. GRILLE DE PRIX STRIPE -->
+    <div id="errMsg" class="error-msg"></div>
+
     <div class="pricing-grid">
       <div class="price-card">
-        <div class="price-title">🆓 Démo</div>
-        <div class="price-val">Gratuit</div>
-        <button class="pay-btn" id="btnFree">Générer 1 idée</button>
+        <div>
+          <h3>Essai Gratuit</h3>
+          <p>1 idée pour tester</p>
+          <div class="price">0 €</div>
+        </div>
+        <button id="btnFree" class="secondary">Générer 1 idée</button>
       </div>
 
       <div class="price-card">
-        <div class="price-title">🚀 Starter</div>
-        <div class="price-val">2,99 €</div>
-        <button class="pay-btn" id="btnStarter">Acheter 5 idées</button>
+        <div>
+          <h3>Pack Découverte</h3>
+          <p>5 idées prêtes à publier</p>
+          <div class="price">2,99 €</div>
+        </div>
+        <button id="btnStarter">Acheter 5 idées</button>
       </div>
 
-      <div class="price-card featured">
-        <span class="price-badge">Recommandé</span>
-        <div class="price-title">🔥 Pack Pro</div>
-        <div class="price-val">5,99 €</div>
-        <button class="pay-btn featured-btn" id="btnPremium">Acheter 14 idées</button>
+      <div class="price-card">
+        <div>
+          <h3>Pack Pro</h3>
+          <p>30 idées (1 mois complet)</p>
+          <div class="price">5,99 €</div>
+        </div>
+        <button id="btnPremium">Acheter 30 idées</button>
       </div>
     </div>
 
-    <div class="form-bottom">
-      <span id="errMsg" class="err-msg"></span>
+    <div id="toolbar" class="toolbar">
+      <button id="copyBtn">Copier tout le texte</button>
     </div>
-  </div>
 
-  <div class="toolbar" id="toolbar" style="display:none;">
-    <button class="copy-btn" id="copyBtn">Copier tout le texte</button>
+    <div id="resultsZone"></div>
   </div>
-
-  <div id="resultsZone"></div>
-</div>
 
 <script>
 (function(){
@@ -344,47 +223,54 @@
     });
   }
 
-  // Génération d'1 idée gratuite
-  async function generateFree(){
-    const niche = document.getElementById('niche').value.trim();
+  async function generateIdeas(niche, count){
     const platforms = selectedPlatforms();
     const tone = document.getElementById('tone').value;
     const focus = document.getElementById('focus').value;
-    errMsg.textContent = '';
-
-    if(!niche){ renderError('Écris ta niche pour commencer.'); return; }
-    if(platforms.length === 0){ renderError('Choisis au moins une plateforme.'); return; }
-
-    if (typeof gtag === 'function') gtag('event', 'generate_clicked', { 'niche': niche });
 
     renderLoading();
 
-    try{
+    try {
       const response = await fetch("/.netlify/functions/generate-ideas", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ niche, platforms, tone, count: "1", focus })
+        body: JSON.stringify({ niche, platforms, tone, count, focus })
       });
 
       const data = await response.json();
       if(!response.ok || data.error) throw new Error(data.error || 'request-failed');
 
-      if (typeof gtag === 'function') gtag('event', 'ideas_generated', { 'ideas_count': 1 });
-
       lastIdeas = data.ideas;
       renderIdeas(data.ideas);
-    }catch(e){
+    } catch(e) {
       resultsZone.innerHTML = '';
       renderError("Erreur lors de la génération. Réessaie !");
     }
   }
 
-  // Redirection Stripe Checkout
+  // Vérification au retour de paiement Stripe
+  const urlParams = new URLSearchParams(window.location.search);
+  const isSuccess = urlParams.get('success');
+  const savedNiche = urlParams.get('niche');
+
+  if (isSuccess === 'true' && savedNiche) {
+    document.getElementById('niche').value = savedNiche;
+    generateIdeas(savedNiche, "5");
+  }
+
+  // Événements boutons
+  document.getElementById('btnFree').addEventListener('click', () => {
+    const niche = document.getElementById('niche').value.trim();
+    if(!niche){ renderError('Écris ta niche pour commencer.'); return; }
+    generateIdeas(niche, "1");
+  });
+
+  document.getElementById('btnStarter').addEventListener('click', () => checkout(PRICE_STARTER, 'starter_clicked'));
+  document.getElementById('btnPremium').addEventListener('click', () => checkout(PRICE_PREMIUM, 'premium_clicked'));
+
   async function checkout(priceId, eventName){
     const niche = document.getElementById('niche').value.trim();
     if(!niche){ renderError('Entre d\'abord ta niche ci-dessus.'); return; }
-
-    if (typeof gtag === 'function') gtag('event', eventName);
 
     try{
       const res = await fetch("/.netlify/functions/create-checkout", {
@@ -393,12 +279,8 @@
         body: JSON.stringify({ priceId, niche })
       });
       const data = await res.json();
-
-      if(data.url){
-        window.location.href = data.url;
-      } else {
-        renderError("Impossible d'ouvrir le paiement Stripe.");
-      }
+      if(data.url) window.location.href = data.url;
+      else renderError("Impossible d'ouvrir le paiement Stripe.");
     }catch(e){
       renderError("Erreur de connexion au serveur de paiement.");
     }
@@ -413,10 +295,6 @@
       `CTA : ${idea.cta}\n` +
       `Plateformes : ${(idea.platforms||[]).join(', ')}\n`;
   }
-
-  document.getElementById('btnFree').addEventListener('click', generateFree);
-  document.getElementById('btnStarter').addEventListener('click', () => checkout(PRICE_STARTER, 'starter_clicked'));
-  document.getElementById('btnPremium').addEventListener('click', () => checkout(PRICE_PREMIUM, 'premium_clicked'));
 
   copyBtn.addEventListener('click', () => {
     const text = lastIdeas.map((idea, i) => `JOUR ${i+1}\n` + ideaToText(idea)).join('\n---\n\n');
