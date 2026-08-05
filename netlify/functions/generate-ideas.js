@@ -6,7 +6,7 @@ exports.handler = async function (event) {
     return { statusCode: 405, body: "Method Not Allowed" };
   }
 
-  const apiKey = process.env.MISTRAL_API_KEY; // <-- lue depuis Netlify, jamais écrite en dur ici
+  const apiKey = process.env.MISTRAL_API_KEY;
 
   if (!apiKey) {
     return {
@@ -28,6 +28,9 @@ exports.handler = async function (event) {
     return { statusCode: 400, body: JSON.stringify({ error: "Niche et plateformes requises." }) };
   }
 
+  // 🔴 CORRECTION 1 : Forcer le nombre exact demandé (1, 5 ou 14)
+  const targetCount = parseInt(count, 10) || 1;
+
   const focusInstruction =
     focus === "balanced" || !focus
       ? "Équilibre les piliers sur l'ensemble des idées, environ 40% Éducation, 20% Storytelling, 20% Vente, 20% Viralité."
@@ -42,11 +45,12 @@ exports.handler = async function (event) {
 - "cta" (string, la phrase de call-to-action exacte à mettre en fin de post, en français)
 - "platforms" (tableau de strings parmi celles fournies)`;
 
+  // 🔴 CORRECTION 2 : Dire explicitement le bon nombre à Mistral
   const userPrompt = `Niche : ${niche}
 Plateformes ciblées : ${platforms.join(", ")}
 Ton souhaité : ${tone || "Fun et décontracté"}
 ${focusInstruction}
-Génère exactement ${count || 30} idées de contenu variées et non répétitives, avec des formats différents. Chaque idée doit être un plan d'action prêt à publier, avec un hook réellement percutant (pas générique) et une structure concrète et actionnable, pas de description vague. Réponds uniquement avec l'objet JSON { "ideas": [...] }.`;
+Génère exactement ${targetCount} idées de contenu variées et non répétitives, avec des formats différents. Chaque idée doit être un plan d'action prêt à publier, avec un hook réellement percutant (pas générique) et une structure concrète et actionnable, pas de description vague. Réponds uniquement avec l'objet JSON { "ideas": [...] }.`;
 
   try {
     const response = await fetch("https://api.mistral.ai/v1/chat/completions", {
@@ -57,6 +61,7 @@ Génère exactement ${count || 30} idées de contenu variées et non répétitiv
       },
       body: JSON.stringify({
         model: "mistral-small-latest",
+        max_tokens: 3500, // 🔴 CORRECTION 3 : Augmenter la limite pour ne pas couper les 14 idées
         response_format: { type: "json_object" },
         messages: [
           { role: "system", content: systemPrompt },
