@@ -344,7 +344,7 @@
     });
   }
 
-  // Génération des idées (démo ou suite à achat)
+  // Génération des idées (démo ou suite à achat) - ROUTE VERCEL
   async function generate(count, customNiche){
     const niche = customNiche || document.getElementById('niche').value.trim();
     const platforms = selectedPlatforms();
@@ -360,7 +360,7 @@
     renderLoading();
 
     try{
-      const response = await fetch("/.netlify/functions/generate-ideas", {
+      const response = await fetch("/api/generate-ideas", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ niche, platforms, tone, count: String(count), focus })
@@ -379,7 +379,7 @@
     }
   }
 
-  // Redirection Stripe Checkout
+  // Redirection Stripe Checkout - ROUTE VERCEL
   async function checkout(priceId, count, eventName){
     const niche = document.getElementById('niche').value.trim();
     if(!niche){ renderError('Entre d\'abord ta niche ci-dessus.'); return; }
@@ -387,7 +387,7 @@
     if (typeof gtag === 'function') gtag('event', eventName);
 
     try{
-      const res = await fetch("/.netlify/functions/create-checkout", {
+      const res = await fetch("/api/create-checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ priceId, niche: `${niche}|${count}` })
@@ -426,7 +426,7 @@
     generate(savedCount, savedNiche);
   }
 
-  // 1. Bouton Démo : limité à 1 seule génération par navigateur
+  // 1. Bouton Démo : 1 seule idée et 1 seule utilisation
   document.getElementById('btnFree').addEventListener('click', () => {
     if (localStorage.getItem('free_idea_used')) {
       renderError("Tu as déjà utilisé ton idée gratuite ! Choisis un pack pour débloquer plus d'idées.");
