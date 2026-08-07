@@ -380,7 +380,7 @@
   }
 
   // Redirection Stripe Checkout
-  async function checkout(priceId, eventName){
+  async function checkout(priceId, count, eventName){
     const niche = document.getElementById('niche').value.trim();
     if(!niche){ renderError('Entre d\'abord ta niche ci-dessus.'); return; }
 
@@ -390,7 +390,7 @@
       const res = await fetch("/.netlify/functions/create-checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ priceId, niche })
+        body: JSON.stringify({ priceId, niche: `${niche}|${count}` })
       });
       const data = await res.json();
 
@@ -417,14 +417,28 @@
   // Détection retour automatique après paiement Stripe
   const urlParams = new URLSearchParams(window.location.search);
   if (urlParams.get('success') === 'true' && urlParams.get('niche')) {
-    const savedNiche = urlParams.get('niche');
+    const rawNiche = urlParams.get('niche');
+    const parts = rawNiche.split('|');
+    const savedNiche = parts[0];
+    const savedCount = parseInt(parts[1], 10) || 5;
+
     document.getElementById('niche').value = savedNiche;
-    generate(5, savedNiche);
+    generate(savedCount, savedNiche);
   }
 
-  document.getElementById('btnFree').addEventListener('click', () => generate(1));
-  document.getElementById('btnStarter').addEventListener('click', () => checkout(PRICE_STARTER, 'starter_clicked'));
-  document.getElementById('btnPremium').addEventListener('click', () => checkout(PRICE_PREMIUM, 'premium_clicked'));
+  // 1. Bouton Démo : limité à 1 seule génération par navigateur
+  document.getElementById('btnFree').addEventListener('click', () => {
+    if (localStorage.getItem('free_idea_used')) {
+      renderError("Tu as déjà utilisé ton idée gratuite ! Choisis un pack pour débloquer plus d'idées.");
+      return;
+    }
+    localStorage.setItem('free_idea_used', 'true');
+    generate(1);
+  });
+
+  // 2. Boutons d'achat : envoient la quantité exacte achetée
+  document.getElementById('btnStarter').addEventListener('click', () => checkout(PRICE_STARTER, 5, 'starter_clicked'));
+  document.getElementById('btnPremium').addEventListener('click', () => checkout(PRICE_PREMIUM, 14, 'premium_clicked'));
 
   copyBtn.addEventListener('click', () => {
     const text = lastIdeas.map((idea, i) => `JOUR ${i+1}\n` + ideaToText(idea)).join('\n---\n\n');
