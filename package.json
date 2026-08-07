@@ -15,30 +15,17 @@ module.exports = async (req, res) => {
     const prompt = `Génère ${ideasCount} idées de contenu ultra-détaillées pour la niche "${niche}".
 Ton : ${tone || 'Fun et décontracté'}. Objectif : ${focus || 'Équilibré'}. Plateformes : ${(platforms || []).join(', ')}.
 
-Pour chaque idée, tu dois absolument fournir :
-- Un pilier précis (Éducation, Storytelling, Vente, Viralité).
-- Un Hook / Accroche irrésistible.
-- Un Concept détaillé qui explique le fond de l'idée.
-- Une Structure complète pas à pas avec des exemples d'actions/dialogues.
-- Le Format vidéo exact.
-- Un CTA fort.
-- Les plateformes adaptées.
-
-Réponds EXCLUSIVEMENT sous forme d'un objet JSON strict :
+Fournis un objet JSON strict au format :
 {
   "ideas": [
     {
       "pillar": "Éducation",
-      "hook": "L'accroche exacte",
-      "concept": "Le concept détaillé",
-      "structure": [
-        "1. Première étape...",
-        "2. Deuxième étape...",
-        "3. Troisième étape..."
-      ],
+      "hook": "Accroche percutante",
+      "concept": "Concept détaillé",
+      "structure": ["1. Étape 1", "2. Étape 2"],
       "format": "Reel 30-60s",
       "cta": "Appel à l'action",
-      "platforms": ${JSON.stringify(platforms || ['instagram'])}
+      "platforms": ["instagram", "tiktok"]
     }
   ]
 }`;
@@ -57,16 +44,13 @@ Réponds EXCLUSIVEMENT sous forme d'un objet JSON strict :
     });
 
     const data = await response.json();
-    
     if (!data.choices || !data.choices[0]) {
       return res.status(500).json({ error: 'Réponse Mistral invalide' });
     }
 
-    const resultText = data.choices[0].message.content;
-    const parsed = JSON.parse(resultText);
-
+    const parsed = JSON.parse(data.choices[0].message.content);
     return res.status(200).json(parsed);
   } catch (error) {
-    return res.status(500).json({ error: 'Erreur lors de la génération.' });
+    return res.status(500).json({ error: error.message });
   }
 };
