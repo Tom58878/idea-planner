@@ -9,112 +9,65 @@ module.exports = async (req, res) => {
   }
 
   const payload = req.body || {};
-  const { niche, platforms, tone, count, focus } = payload;
+  const { niche, platforms, tone, count, objective } = payload;
 
   if (!niche || !platforms || !platforms.length) {
     return res.status(400).json({ error: 'Niche et plateformes requises.' });
   }
 
   const targetCount = parseInt(count, 10) || 1;
-  const objectiveText = (focus === 'balanced' || !focus) ? 'Équilibré (Éducation, Storytelling, Vente, Viralité)' : focus;
+  const isBalanced = !objective || objective === 'balanced';
 
-  const systemPrompt = `Tu es un directeur de stratégie de contenu senior, expert en création de contenu digital, copywriting, réseaux sociaux et psychologie de l'attention.
+  let objectiveInstruction = "";
+  if (isBalanced) {
+    objectiveInstruction = "Répartis et équilibre les objectifs sur l'ensemble des cartes de manière variée parmi : 'Éducation / Expertise', 'Storytelling / Confiance', 'Vente / Conversion', 'Viralité / Engagement'.";
+  } else {
+    objectiveInstruction = `RÈGLE ABSOLUE : L'objectif de TOUTES les cartes générées DOIT ÊTRE STRICTEMENT ET UNIQUEMENT "${objective}". L'interdiction est totale de changer d'objectif.`;
+  }
 
-Ton rôle est de créer des idées de contenu professionnelles, originales et directement exploitables par un créateur, une marque ou un entrepreneur.
-
-Tu ne génères pas simplement des sujets.
-Tu crées des concepts complets prêts à être produits.
-
-=========================
-RÈGLES PRINCIPALES
-=========================
-
-1. RESPECT ABSOLU DE LA NICHE
-Toutes les idées doivent être directement liées à la niche fournie.
-Ne dérive jamais vers des sujets génériques.
-Chaque idée doit apporter une vraie valeur dans cet univers.
-
-2. COMBINAISON TON + OBJECTIF
-Le ton définit la manière de communiquer.
-L'objectif définit le résultat recherché.
-Tu dois obligatoirement combiner les deux dans :
-- le Hook ;
-- le Concept ;
-- la Structure ;
-- le CTA.
-
-Ne mélange jamais plusieurs objectifs sauf demande explicite.
-
-3. CONNAISSANCE DES PLATEFORMES
-Tu connais les bonnes pratiques de chaque plateforme :
-- TikTok : Hooks rapides, attention dans les premières secondes, formats dynamiques et mémorisables.
-- Instagram : Formats visuels, carrousels sauvegardables, Reels engageants, interactions.
-- LinkedIn : Angles professionnels, opinions, expériences, apprentissages, crédibilité.
-- YouTube : Profondeur, narration, rétention, valeur éducative.
-
-RÈGLES STRICTES SUR LES PLATEFORMES :
-N'inclus JAMAIS de plateformes qui ne figurent pas dans la liste sélectionnée par l'utilisateur.
+  const systemPrompt = `Tu es un directeur de stratégie de contenu senior, expert en copywriting, réseaux sociaux et psychologie de l'attention.
+Tu réponds UNIQUEMENT en JSON valide, sans balises markdown, sans texte d'introduction ni de conclusion.
 
 =========================
-FORMAT DE SORTIE OBLIGATOIRE
+RÈGLES DE GÉNÉRATION
 =========================
 
-Réponds uniquement en JSON valide, sans balises markdown, sans texte d'introduction ni de conclusion.
+1. NICHE ABSOLUE : Le sujet est "${niche}". Tout le contenu doit y être directement lié.
+2. TON EXIGÉ : Le ton demandé est "${tone || 'Fun et décontracté'}". Tu dois obligatoirement le refléter dans le hook, le concept, la structure et le CTA.
+3. OBJECTIF : ${objectiveInstruction}
 
-Format :
+4. HOOKS PERCUTANTS (CRUCIAL) : 
+   Le hook doit être une phrase réellement utilisable dans les 3 premières secondes d'une vidéo ou la première ligne d'un post. 
+   Il doit donner une envie irrésistible de continuer. 
+   Évite absolument les titres génériques (ex: "5 conseils pour..."). Utilise des leviers psychologiques forts (ex: "Tu nettoies ton visage tous les jours ? Tu fais peut-être cette erreur.").
+
+5. ANTI-CONTENU GÉNÉRIQUE :
+   Ne génère JAMAIS d'idées vagues. Chaque idée doit avoir un angle précis, une situation concrète et une valeur claire et actionnable pour l'audience.
+
+6. PLATEFORMES ET BONNES PRATIQUES :
+   - Limite strictement aux plateformes demandées : [${platforms.join(', ')}].
+   - TikTok : Privilégie les hooks rapides, l'attention dans les premières secondes, les formats dynamiques et mémorisables.
+   - Instagram : Privilégie les formats visuels, les carrousels sauvegardables, les Reels engageants et les interactions communautaires.
+   - LinkedIn : Privilégie les angles professionnels, les opinions, les expériences, les apprentissages et la crédibilité.
+   - YouTube : Privilégie la profondeur, la narration, la rétention et la valeur éducative.
+
+Format de sortie JSON obligatoire :
 {
   "ideas": [
     {
-      "pillar": "",
       "objective": "",
+      "tone": "",
       "hook": "",
       "concept": "",
-      "structure": [
-        "",
-        "",
-        ""
-      ],
+      "structure": ["Étape 1...", "Étape 2...", "Étape 3..."],
       "format": "",
       "cta": "",
       "platforms": []
     }
   ]
-}
+}`;
 
-=========================
-QUALITÉ ATTENDUE
-=========================
-
-Chaque idée doit être :
-- originale ;
-- concrète ;
-- réalisable ;
-- suffisamment détaillée pour être tournée ou publiée immédiatement ;
-- adaptée à la plateforme choisie ;
-- cohérente avec le ton et l'objectif.
-
-Évite les idées vagues. Donne des angles précis, avec une vraie accroche et une vraie intention.`;
-
-  const userPrompt = `=========================
-CONTEXTE UTILISATEUR
-=========================
-
-Niche :
-"${niche}"
-
-Plateformes choisies :
-"${platforms.join(', ')}"
-
-Ton demandé :
-"${tone || 'Fun et décontracté'}"
-
-Objectif recherché :
-"${objectiveText}"
-
-Nombre d'idées :
-"${targetCount}"
-
-Génère exactement ${targetCount} idée(s) respectant rigoureusement ce contexte et ce format JSON.`;
+  const userPrompt = `Génère exactement ${targetCount} idée(s) ultra-qualitative(s) pour la niche "${niche}" avec le ton "${tone}" et l'objectif "${isBalanced ? 'Équilibré' : objective}". Respecte scrupuleusement le format JSON { "ideas": [...] }.`;
 
   try {
     const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
@@ -147,16 +100,26 @@ Génère exactement ${targetCount} idée(s) respectant rigoureusement ce context
     try {
       parsed = JSON.parse(clean);
     } catch (parseErr) {
-      return res.status(502).json({ error: 'Format JSON invalide renvoyé par l\'IA', detail: text.slice(0, 500) });
+      return res.status(502).json({ error: 'Format JSON invalide', detail: text.slice(0, 500) });
     }
 
     const rawIdeas = Array.isArray(parsed) ? parsed : (parsed.ideas || []);
     
-    // Normalisation pour assurer le bon affichage du frontend
-    const ideas = rawIdeas.slice(0, targetCount).map(idea => ({
-      ...idea,
-      pillar: idea.pillar || idea.objective || focus || 'Éducation'
-    }));
+    // Sécurisation absolue de la sortie
+    const ideas = rawIdeas.slice(0, targetCount).map((idea, index) => {
+      let assignedObj = idea.objective;
+      if (!isBalanced) {
+        assignedObj = objective;
+      } else if (!assignedObj || assignedObj === "") {
+        const mix = ['Éducation / Expertise', 'Storytelling / Confiance', 'Vente / Conversion', 'Viralité / Engagement'];
+        assignedObj = mix[index % mix.length];
+      }
+      return {
+        ...idea,
+        objective: assignedObj,
+        tone: tone || idea.tone || 'Fun et décontracté'
+      };
+    });
 
     return res.status(200).json({ ideas });
   } catch (e) {
