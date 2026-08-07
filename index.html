@@ -360,8 +360,7 @@
     renderLoading();
 
     try{
-      const response = await fetch("/api/generate-ideas", {
-        method: "POST",
+const response = await fetch("/api/generate-ideas", {        method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ niche, platforms, tone, count: String(count), focus })
       });
