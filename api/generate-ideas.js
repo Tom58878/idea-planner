@@ -13,18 +13,18 @@ module.exports = async (req, res) => {
 
   try {
     const prompt = `Génère exactement ${ideasCount} idées de contenu pour la niche "${niche}".
-Ton: ${tone || 'Fun et décontracté'}. Objectif: ${focus || 'Équilibré'}. Plateformes demandées: ${(platforms || []).join(', ')}.
+Ton: ${tone || 'Fun et décontracté'}. Objectif: ${focus || 'Équilibré'}. Plateformes: ${(platforms || []).join(', ')}.
 
-Tu DOIS répondre EXCLUSIVEMENT avec un objet JSON strict ayant exactement cette structure :
+Tu DOIS répondre EXCLUSIVEMENT avec un objet JSON strict au format suivant :
 {
   "ideas": [
     {
       "pillar": "${focus || 'Éducation'}",
-      "hook": "Texte de l'accroche puissant",
-      "concept": "Explication claire de l'idée",
-      "structure": ["Étape 1...", "Étape 2...", "Étape 3..."],
-      "format": "Reel / TikTok 30s",
-      "cta": "Appel à l'action précis",
+      "hook": "L'accroche de la vidéo",
+      "concept": "Explication du concept",
+      "structure": ["Point 1", "Point 2", "Point 3"],
+      "format": "Reel / TikTok",
+      "cta": "Appel à l'action",
       "platforms": ${JSON.stringify(platforms || ['instagram'])}
     }
   ]
@@ -54,7 +54,6 @@ Tu DOIS répondre EXCLUSIVEMENT avec un objet JSON strict ayant exactement cette
 
     return res.status(200).json(parsed);
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ error: 'Erreur lors de la génération des idées.' });
+    return res.status(500).json({ error: 'Erreur lors de la génération.' });
   }
 };
