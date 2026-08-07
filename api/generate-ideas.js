@@ -1,114 +1,37 @@
-// Cette fonction tourne côté SERVEUR (jamais dans le navigateur du visiteur). 
-// La clé Mistral reste ici, invisible depuis l'extérieur.
-
-exports.handler = async function (event) {
-  if (event.httpMethod !== "POST") {
-    return { statusCode: 405, body: "Method Not Allowed" };
+module.exports = async (req, res) => {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
   const apiKey = process.env.MISTRAL_API_KEY;
-
   if (!apiKey) {
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: "Clé Mistral manquante côté serveur (variable MISTRAL_API_KEY non configurée sur Netlify)." })
-    };
+    return res.status(500).json({ error: 'Clé Mistral non configurée' });
   }
 
-  let payload;
-  try {
-    payload = JSON.parse(event.body);
-  } catch (e) {
-    return { statusCode: 400, body: JSON.stringify({ error: "Corps de requête invalide." }) };
-  }
-
-  const { niche, platforms, tone, count, focus } = payload;
-
-  if (!niche || !platforms || !platforms.length) {
-    return { statusCode: 400, body: JSON.stringify({ error: "Niche et plateformes requises." }) };
-  }
-
-  // 🔴 CORRECTION 1 : Forcer le nombre exact demandé (1, 5 ou 14)
-  const targetCount = parseInt(count, 10) || 1;
-
-  const focusInstruction =
-    focus === "balanced" || !focus
-      ? "Équilibre les piliers sur l'ensemble des idées, environ 40% Éducation, 20% Storytelling, 20% Vente, 20% Viralité."
-      : `Toutes les idées doivent être du pilier "${focus}" exclusivement.`;
-
-  const systemPrompt = `Tu es un stratège de contenu senior et community manager expérimenté. Tu réponds UNIQUEMENT en JSON valide, sans aucun texte avant ou après, sans balises markdown. Le format est un objet JSON avec une clé "ideas" contenant un tableau d'objets, chacun avec exactement ces clés :
-- "pillar" (string, un parmi : "Éducation", "Storytelling", "Vente", "Viralité")
-- "hook" (string, la phrase d'accroche EXACTE à copier-coller en début de post/vidéo, percutante, en français)
-- "concept" (string, 1-2 phrases expliquant l'angle et le sujet du contenu)
-- "structure" (tableau de 3 à 4 strings, chacune une étape/slide concrète du contenu, ex: "Slide 1 : ...")
-- "format" (string, très court, ex: "Carrousel 5 slides", "Vidéo face caméra 30s", "Post texte + image")
-- "cta" (string, la phrase de call-to-action exacte à mettre en fin de post, en français)
-- "platforms" (tableau de strings parmi celles fournies)`;
-
-  // 🔴 CORRECTION 2 : Dire explicitement le bon nombre à Mistral
-  const userPrompt = `Niche : ${niche}
-Plateformes ciblées : ${platforms.join(", ")}
-Ton souhaité : ${tone || "Fun et décontracté"}
-${focusInstruction}
-Génère exactement ${targetCount} idées de contenu variées et non répétitives, avec des formats différents. Chaque idée doit être un plan d'action prêt à publier, avec un hook réellement percutant (pas générique) et une structure concrète et actionnable, pas de description vague. Réponds uniquement avec l'objet JSON { "ideas": [...] }.`;
+  const { niche, platforms, tone, count, focus } = req.body || {};
 
   try {
-    const response = await fetch("https://api.mistral.ai/v1/chat/completions", {
-      method: "POST",
+    const prompt = `Génère ${count || 1} idées de contenu pour la niche "${niche}". Tone: ${tone}. Focus: ${focus}. Platforms: ${(platforms || []).join(', ')}. Réponds exclusivement sous forme de JSON structuré avec un tableau "ideas".`;
+
+    const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${apiKey}`
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
       },
       body: JSON.stringify({
-        model: "mistral-small-latest",
-        max_tokens: 3500, // 🔴 CORRECTION 3 : Augmenter la limite pour ne pas couper les 14 idées
-        response_format: { type: "json_object" },
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt }
-        ]
+        model: 'mistral-small-latest',
+        messages: [{ role: 'user', content: prompt }],
+        response_format: { type: 'json_object' }
       })
     });
 
-    if (!response.ok) {
-      const errText = await response.text();
-      console.error("Erreur Mistral (HTTP " + response.status + "):", errText);
-      return {
-        statusCode: 502,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ error: "Erreur Mistral", detail: errText })
-      };
-    }
-
     const data = await response.json();
-    const text = data.choices?.[0]?.message?.content || "";
-    const clean = text.replace(/```json|```/g, "").trim();
+    const resultText = data.choices[0].message.content;
+    const parsed = JSON.parse(resultText);
 
-    let parsed;
-    try {
-      parsed = JSON.parse(clean);
-    } catch (parseErr) {
-      console.error("Erreur de parsing JSON. Texte reçu de Mistral:", text);
-      return {
-        statusCode: 502,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ error: "Réponse Mistral non-JSON", detail: text.slice(0, 500) })
-      };
-    }
-
-    const ideas = Array.isArray(parsed) ? parsed : parsed.ideas;
-
-    return {
-      statusCode: 200,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ideas })
-    };
-  } catch (e) {
-    console.error("Erreur serveur inattendue:", e);
-    return {
-      statusCode: 500,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ error: "Erreur serveur", detail: String(e) })
-    };
+    return res.status(200).json(parsed);
+  } catch (error) {
+    return res.status(500).json({ error: 'Erreur lors de la génération.' });
   }
 };
