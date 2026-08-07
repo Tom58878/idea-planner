@@ -19,41 +19,48 @@ module.exports = async (req, res) => {
 
   let focusInstruction = "";
   if (targetCount === 1) {
-    focusInstruction = "Génère une seule et unique idée de contenu au total (1 seule carte). Choisis le pilier le plus stratégique pour cette niche.";
+    focusInstruction = "Génère une seule et unique idée de contenu. Choisis le pilier le plus pertinent pour la niche.";
   } else if (focus === 'balanced' || !focus) {
-    focusInstruction = "Équilibre parfaitement les piliers sur l'ensemble des idées (environ 40% Éducation, 20% Storytelling, 20% Vente, 20% Viralité).";
+    focusInstruction = "Équilibre parfaitement les piliers sur l'ensemble des idées (Éducation, Storytelling, Vente, Viralité).";
   } else {
-    focusInstruction = `Toutes les idées doivent être axées exclusivement sur le pilier "${focus}".`;
+    focusInstruction = `Toutes les idées doivent appartenir exclusivement au pilier "${focus}".`;
   }
 
   const systemPrompt = `Tu es un stratège de contenu senior, copywriter expert et community manager haut de gamme.
-Ton rôle est de fournir des plans de contenu ultra-détaillés, prêts à tourner ou à rédiger immédiatement. Pas de généralités, pas de phrases vagues.
+
+CONSIGNE 1 — LA NICHE :
+Le sujet exact est : "${niche}". TOUTES les idées doivent traiter DIRECTEMENT et EXCLUSIVEMENT de "${niche}". Interdiction totale de faire du hors-sujet ou de basculer sur des modèles génériques (comme la gestion de budget ou les abonnements).
+
+CONSIGNE 2 — LE TON EXIGÉ :
+Le ton à adopter obligatoirement dans les hooks, concepts et structures est : "${tone || 'Fun et décontracté'}".
+- "Fun et décontracté" : style vivant, familier, punchy, avec de l'humour.
+- "Expert et pédagogue" : style rigoureux, précis, axé sur l'expertise technique et la clarté.
+- "Inspirant et motivant" : style émotionnel, fort, axé sur le déclic et la réussite.
+- "Direct et sans filtre" : style cash, percutant, sans langue de bois.
+
+CONSIGNE 3 — L'OBJECTIF / PILIER :
+${focusInstruction}
 
 Tu réponds UNIQUEMENT en JSON valide, sans texte d'introduction ni de conclusion, sans balises markdown.
 Le format est un objet JSON : { "ideas": [...] } contenant exactement ${targetCount} objet(s).
 
 Chaque objet dans le tableau "ideas" doit avoir très exactement ces clés :
 - "pillar" : (string) Un parmi strictement : "Éducation", "Storytelling", "Vente", "Viralité".
-- "hook" : (string) L'accroche EXACTE (3 premières secondes / 1re ligne). Doit utiliser un levier psychologique fort (rupture de motif, chiffre choc, question provocante, promesse directe).
-- "concept" : (string) Explication claire (2 à 3 phrases) de l'angle d'attaque, du contexte et de la valeur apportée au spectateur.
+- "hook" : (string) L'accroche EXACTE (3 premières secondes / 1re ligne) rédigée dans le ton "${tone || 'Fun et décontracté'}" et centrée sur "${niche}".
+- "concept" : (string) Explication claire (2 à 3 phrases) de l'angle d'attaque et de la valeur apportée.
 - "structure" : (tableau de 3 à 5 strings) Le découpage pas-à-pas ultra-précis du contenu.
-  * Pour une vidéo : découpage chronologique (ex: "0-3s : Hook visuel + phrase d'accroche", "3-15s : Le problème mal compris", "15-30s : La solution en 2 étapes").
-  * Pour un carrousel : découpage slide par slide (ex: "Slide 1 : Titre + accroche", "Slide 2-3 : Les 2 erreurs", "Slide 4 : La méthode alternative").
-- "format" : (string) Format exact et précis (ex: "Reel / TikTok face caméra (30-45s)", "Carrousel 5 slides", "Post texte long + image").
-- "cta" : (string) La phrase exacte de Call-To-Action à dire ou écrire à la fin.
-- "platforms" : (tableau de strings) Les plateformes adaptées parmi celles fournies dans la demande.`;
+- "format" : (string) Format exact et précis (ex: "Reel / TikTok face caméra (30-45s)", "Carrousel 5 slides").
+- "cta" : (string) La phrase exacte de Call-To-Action.
+- "platforms" : (tableau de strings) Les plateformes adaptées parmi celles fournies.`;
 
   const userPrompt = `Détails de la demande :
-- Niche / Sujet : ${niche}
+- Niche : ${niche}
 - Plateformes : ${platforms.join(', ')}
-- Ton de communication : ${tone || 'Fun et décontracté'}
-- Recommandation d'objectif : ${focusInstruction}
+- Ton : ${tone || 'Fun et décontracté'}
+- Objectif / Pilier : ${focus || 'balanced'}
+- Nombre d'idées : ${targetCount}
 
-Consignes impératives :
-1. Génère exactement ${targetCount} idée(s) complète(s) et non répétitives.
-2. Chaque carte doit être un chef-d'œuvre de copywriting : l'accroche (hook) doit donner immédiatement envie de lire/regarder.
-3. La structure doit donner la feuille de route exacte pour créer le contenu sans réfléchir.
-4. Réponds STRICTEMENT au format JSON { "ideas": [...] }.`;
+Génère exactement ${targetCount} idée(s) en respectant scrupuleusement la niche, le ton et l'objectif demandés. Réponds STRICTEMENT au format JSON { "ideas": [...] }.`;
 
   try {
     const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
