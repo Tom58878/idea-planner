@@ -50,41 +50,24 @@
       min-height:100vh;
     }
 
-    .board-header{
-      text-align:center;
-      margin-bottom:26px;
-    }
-
+    .board-header{text-align:center; margin-bottom:26px;}
     .board-title{
       font-family:'Permanent Marker', cursive;
       font-size:clamp(28px,4vw,42px);
       color:var(--paper);
       text-shadow:0 2px 0 rgba(0,0,0,.25);
       margin:0 0 4px;
-      letter-spacing:.5px;
     }
-
-    .board-sub{
-      color:rgba(250,246,236,.75);
-      font-size:14px;
-      font-weight:500;
-      max-width:480px;
-      margin:0 auto;
-    }
+    .board-sub{color:rgba(250,246,236,.75); font-size:14px; font-weight:500; max-width:480px; margin:0 auto;}
 
     .card-form{
-      background:var(--paper);
-      max-width:640px;
-      margin:0 auto 34px;
-      padding:22px 24px 20px;
-      border-radius:3px;
-      position:relative;
+      background:var(--paper); max-width:640px; margin:0 auto 34px; padding:22px 24px 20px;
+      border-radius:3px; position:relative;
       box-shadow:0 10px 22px rgba(0,0,0,.35), 0 1px 0 rgba(255,255,255,.4) inset;
       transform:rotate(-0.6deg);
     }
     .card-form::before{
-      content:'';
-      position:absolute; top:-11px; left:50%; transform:translateX(-50%);
+      content:''; position:absolute; top:-11px; left:50%; transform:translateX(-50%);
       width:18px; height:18px; border-radius:50%;
       background:radial-gradient(circle at 35% 30%, #ff8a80, #b0201a 70%);
       box-shadow:0 3px 6px var(--pin-shadow);
@@ -101,9 +84,7 @@
     }
     .form-input:focus, .form-select:focus{outline:2px solid var(--gold); outline-offset:1px; border-color:var(--gold);}
 
-    .secondary-params{
-      background:#f1ece0; border-radius:8px; padding:12px 14px 4px; margin-top:4px;
-    }
+    .secondary-params{background:#f1ece0; border-radius:8px; padding:12px 14px 4px; margin-top:4px;}
     .form-label-sm{
       display:block; font-size:10.5px; font-weight:700; text-transform:uppercase;
       letter-spacing:.05em; color:var(--ink-soft); margin-bottom:4px;
@@ -124,11 +105,10 @@
     .chip[data-p="tiktok"].on{background:var(--tiktok); border-color:var(--tiktok); color:#fff;}
     .chip[data-p="youtube"].on{background:var(--yt); border-color:var(--yt); color:#fff;}
     .chip[data-p="linkedin"].on{background:var(--li); border-color:var(--li); color:#fff;}
-    .chip-dot{width:8px;height:8px;border-radius:50%;background:#ccc;}
+    .chip-dot{width:8px; height:8px; border-radius:50%; background:#ccc;}
     .chip.on .chip-dot{background:#fff;}
 
     .form-bottom{display:flex; align-items:flex-end; justify-content:space-between; gap:14px; margin-top:16px; flex-wrap:wrap;}
-
     .err-msg{color:#7a1f1f; font-size:13px; font-weight:600; margin-top:10px;}
 
     .pricing-grid{
@@ -139,9 +119,7 @@
       background:#fff; border:1.5px solid #d8cdb8; border-radius:8px; padding:16px;
       text-align:center; position:relative; box-shadow:0 4px 10px rgba(0,0,0,.08);
     }
-    .price-card.featured{
-      border-color:var(--gold); background:#fffdf5;
-    }
+    .price-card.featured{border-color:var(--gold); background:#fffdf5;}
     .price-badge{
       position:absolute; top:-10px; right:12px; background:var(--gold); color:#3a2a06;
       font-size:10px; font-weight:800; text-transform:uppercase; padding:2px 8px; border-radius:10px;
@@ -161,7 +139,6 @@
       display:grid; grid-template-columns:repeat(auto-fill, minmax(280px,1fr)); gap:22px 18px;
       max-width:1100px; margin:0 auto;
     }
-
     .note{
       background:var(--paper); padding:16px 16px 14px; border-radius:2px;
       box-shadow:0 8px 16px rgba(0,0,0,.32); position:relative; min-height:180px;
@@ -173,7 +150,10 @@
     }
     .note .day-idx{
       font-family:'JetBrains Mono', monospace; font-size:11px; font-weight:700;
-      color:var(--ink-soft); letter-spacing:.04em; margin-bottom:6px;
+      color:var(--ink-soft); letter-spacing:.04em; margin-bottom:4px;
+    }
+    .meta-tag{
+      display:block; font-size:11px; font-weight:700; color:var(--ink); margin-bottom:2px;
     }
     .pillar-tag{
       display:inline-block; font-size:10px; font-weight:800; text-transform:uppercase;
@@ -217,7 +197,6 @@
       border:none; border-radius:6px; padding:8px 14px; cursor:pointer; color:var(--ink);
     }
     .copy-btn:hover{background:#fff;}
-
     .loading-wrap{text-align:center; color:var(--paper); font-weight:600; font-size:14px; padding:30px 0;}
 
     @media (max-width:480px){
@@ -262,13 +241,13 @@
           </select>
         </div>
         <div style="flex:1; min-width:130px;">
-          <label class="form-label-sm" for="focus">Objectif</label>
-          <select class="form-select-sm" id="focus">
+          <label class="form-label-sm" for="objective">Objectif</label>
+          <select class="form-select-sm" id="objective">
             <option value="balanced" selected>⚡ Équilibré (Recommandé)</option>
-            <option value="Storytelling">📖 Storytelling / Confiance</option>
-            <option value="Vente">🎯 Vente / Conversion</option>
-            <option value="Éducation">💡 Éducation / Expertise</option>
-            <option value="Viralité">🔥 Viralité / Engagement</option>
+            <option value="Storytelling / Confiance">📖 Storytelling / Confiance</option>
+            <option value="Vente / Conversion">🎯 Vente / Conversion</option>
+            <option value="Éducation / Expertise">💡 Éducation / Expertise</option>
+            <option value="Viralité / Engagement">🔥 Viralité / Engagement</option>
           </select>
         </div>
       </div>
@@ -279,20 +258,20 @@
       <div class="price-card">
         <div class="price-title">🆓 Démo</div>
         <div class="price-val">Gratuit</div>
-        <button class="pay-btn" id="btnFree">1 idée d'essai</button>
+        <button class="pay-btn" id="btnFree">Générer 1 idée</button>
       </div>
 
       <div class="price-card">
         <div class="price-title">🚀 Pack Starter</div>
         <div class="price-val">2,99 €</div>
-        <button class="pay-btn" id="btnStarter">5 idées simples</button>
+        <button class="pay-btn" id="btnStarter">Acheter 5 idées</button>
       </div>
 
       <div class="price-card featured">
         <span class="price-badge">Recommandé</span>
         <div class="price-title">🔥 Pack Pro</div>
         <div class="price-val">5,99 €</div>
-        <button class="pay-btn featured-btn" id="btnPremium">14 idées (2 semaines)</button>
+        <button class="pay-btn featured-btn" id="btnPremium">Acheter 14 idées</button>
       </div>
     </div>
 
@@ -348,7 +327,7 @@
     return 'education';
   }
 
-  function renderIdeas(ideas){
+  function renderIdeas(ideas, userTone){
     toolbar.style.display = 'flex';
     resultsZone.innerHTML = `<div class="notes-grid">${
       ideas.map((idea, i) => `
@@ -357,7 +336,8 @@
           <div class="note-head">
             <div>
               <div class="day-idx">JOUR ${String(i+1).padStart(2,'0')}</div>
-              <span class="pillar-tag ${pillarClass(idea.pillar)}">${idea.pillar || 'Éducation'}</span>
+              <span class="pillar-tag ${pillarClass(idea.objective)}">${idea.objective || 'Éducation / Expertise'}</span>
+              <div class="meta-tag">🎭 Ton : ${idea.tone || userTone}</div>
             </div>
             <button class="card-copy-btn" data-idx="${i}" title="Copier ce post-it">📋</button>
           </div>
@@ -387,7 +367,7 @@
     resultsZone.querySelectorAll('.card-copy-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const idea = lastIdeas[parseInt(btn.dataset.idx, 10)];
-        navigator.clipboard.writeText(ideaToText(idea)).then(() => {
+        navigator.clipboard.writeText(ideaToText(idea, userTone)).then(() => {
           const original = btn.textContent;
           btn.textContent = '✓';
           setTimeout(() => btn.textContent = original, 1200);
@@ -400,7 +380,7 @@
     const niche = document.getElementById('niche').value.trim();
     const platforms = selectedPlatforms();
     const tone = document.getElementById('tone').value;
-    const focus = document.getElementById('focus').value;
+    const objective = document.getElementById('objective').value;
     const count = countOverride || "1";
     errMsg.textContent = '';
 
@@ -415,14 +395,14 @@
       const response = await fetch("/api/generate-ideas", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ niche, platforms, tone, count, focus })
+        body: JSON.stringify({ niche, platforms, tone, count, objective })
       });
 
       const data = await response.json();
       if(!response.ok || data.error) throw new Error(data.error || 'request-failed');
 
       lastIdeas = data.ideas;
-      renderIdeas(data.ideas);
+      renderIdeas(data.ideas, tone);
     }catch(e){
       resultsZone.innerHTML = '';
       renderError("Erreur lors de la génération. Réessaie !");
@@ -453,21 +433,21 @@
     }
   }
 
-  function ideaToText(idea){
-    return `JOUR — ${idea.pillar}\n` +
-      `Hook : ${idea.hook}\n` +
-      `Concept : ${idea.concept}\n` +
-      `Structure :\n${(idea.structure||[]).map(s => `  - ${s}`).join('\n')}\n` +
-      `Format : ${idea.format}\n` +
-      `CTA : ${idea.cta}\n` +
-      `Plateformes : ${(idea.platforms||[]).map(p => p).join(', ')}\n`;
+  function ideaToText(idea, defaultTone){
+    return `🎯 Objectif : ${idea.objective}\n` +
+      `🎭 Ton : ${idea.tone || defaultTone}\n` +
+      `🪝 Hook : ${idea.hook}\n` +
+      `💡 Concept : ${idea.concept}\n` +
+      `📝 Structure :\n${(idea.structure||[]).map(s => `  - ${s}`).join('\n')}\n` +
+      `⚙️ Format : ${idea.format}\n` +
+      `📣 CTA : ${idea.cta}\n` +
+      `📱 Plateformes : ${(idea.platforms||[]).join(', ')}\n`;
   }
 
   document.getElementById('btnFree').addEventListener('click', () => generateIdeas("1"));
   document.getElementById('btnStarter').addEventListener('click', () => checkout(PRICE_STARTER, 'starter_clicked', '5'));
   document.getElementById('btnPremium').addEventListener('click', () => checkout(PRICE_PREMIUM, 'premium_clicked', '14'));
 
-  // Détection automatique au retour de Stripe après paiement
   window.addEventListener('DOMContentLoaded', () => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('success') === 'true') {
@@ -481,7 +461,8 @@
   });
 
   copyBtn.addEventListener('click', () => {
-    const text = lastIdeas.map((idea, i) => `JOUR ${i+1}\n` + ideaToText(idea)).join('\n---\n\n');
+    const tone = document.getElementById('tone').value;
+    const text = lastIdeas.map((idea, i) => `JOUR ${i+1}\n` + ideaToText(idea, tone)).join('\n---\n\n');
     navigator.clipboard.writeText(text).then(() => {
       copyBtn.textContent = 'Copié ✓';
       setTimeout(() => copyBtn.textContent = 'Copier tout le texte', 1600);
