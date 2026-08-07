@@ -9,9 +9,26 @@ module.exports = async (req, res) => {
   }
 
   const { niche, platforms, tone, count, focus } = req.body || {};
+  const ideasCount = parseInt(count, 10) || 1;
 
   try {
-    const prompt = `Génère ${count || 1} idées de contenu pour la niche "${niche}". Tone: ${tone}. Focus: ${focus}. Platforms: ${(platforms || []).join(', ')}. Réponds exclusivement sous forme de JSON structuré avec un tableau "ideas".`;
+    const prompt = `Génère exactement ${ideasCount} idées de contenu pour la niche "${niche}".
+Ton: ${tone || 'Fun et décontracté'}. Objectif: ${focus || 'Équilibré'}. Plateformes demandées: ${(platforms || []).join(', ')}.
+
+Tu DOIS répondre EXCLUSIVEMENT avec un objet JSON strict ayant exactement cette structure :
+{
+  "ideas": [
+    {
+      "pillar": "${focus || 'Éducation'}",
+      "hook": "Texte de l'accroche puissant",
+      "concept": "Explication claire de l'idée",
+      "structure": ["Étape 1...", "Étape 2...", "Étape 3..."],
+      "format": "Reel / TikTok 30s",
+      "cta": "Appel à l'action précis",
+      "platforms": ${JSON.stringify(platforms || ['instagram'])}
+    }
+  ]
+}`;
 
     const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
       method: 'POST',
@@ -27,11 +44,17 @@ module.exports = async (req, res) => {
     });
 
     const data = await response.json();
+    
+    if (!data.choices || !data.choices[0]) {
+      return res.status(500).json({ error: 'Réponse Mistral invalide' });
+    }
+
     const resultText = data.choices[0].message.content;
     const parsed = JSON.parse(resultText);
 
     return res.status(200).json(parsed);
   } catch (error) {
-    return res.status(500).json({ error: 'Erreur lors de la génération.' });
+    console.error(error);
+    return res.status(500).json({ error: 'Erreur lors de la génération des idées.' });
   }
 };
