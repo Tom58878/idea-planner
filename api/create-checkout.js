@@ -1,33 +1,39 @@
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);    
+const Stripe = require('stripe');
 
-exports.handler = async (event) => {
-  if (event.httpMethod !== 'POST') {
-    return { statusCode: 405, body: 'Method Not Allowed' };
+module.exports = async (req, res) => {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
-  try {
-    const { priceId, niche } = JSON.parse(event.body);
+  const apiKey = process.env.STRIPE_SECRET_KEY;
+  if (!apiKey) {
+    return res.status(500).json({ error: 'Clé Stripe non configurée' });
+  }
 
-    const siteUrl = event.headers.origin || event.headers.referer || 'https://bespoke-kleicha-6d708d.netlify.app';
+  const stripe = new Stripe(apiKey);
+
+  try {
+    const { priceId, niche } = req.body || {};
+
+    if (!priceId) {
+      return res.status(400).json({ error: 'priceId requis' });
+    }
+
+    const host = req.headers.host;
+    const protocol = host.includes('localhost') ? 'http' : 'https';
+    const baseUrl = `${protocol}://${host}`;
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [{ price: priceId, quantity: 1 }],
       mode: 'payment',
-      success_url: `${siteUrl}/?success=true&niche=${encodeURIComponent(niche || '')}`,
-      cancel_url: `${siteUrl}/?canceled=true`,
+      success_url: `${baseUrl}?success=true&niche=${encodeURIComponent(niche || '')}`,
+      cancel_url: `${baseUrl}?canceled=true`,
     });
 
-    return {
-      statusCode: 200,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url: session.url }),
-    };
+    return res.status(200).json({ url: session.url });
   } catch (error) {
-    return { 
-      statusCode: 500, 
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ error: error.message }) 
-    };
+    console.error('Erreur Stripe:', error);
+    return res.status(500).json({ error: error.message });
   }
 };
