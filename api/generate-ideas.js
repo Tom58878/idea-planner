@@ -131,7 +131,8 @@ Format de sortie JSON obligatoire :
       return {
         ...idea,
         objective: assignedObj,
-        tone: tone || idea.tone || 'Fun et décontracté'
+        tone: tone || idea.tone || 'Fun et décontracté',
+        platforms: platforms // on force les plateformes réellement choisies, on ne fait plus confiance à l'IA sur ce point
       };
     });
 
