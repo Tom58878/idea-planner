@@ -1,10 +1,88 @@
+Claude finished the response
+Thought for 20s
+
+Je t'explique, sans coder, comme demandé — et honnêtement, ce n'est pas Mistral qui est mauvais, tu as identifié deux vrais bugs précis. Je te dis exactement où ils sont.
+Bug 1 : pourquoi ça revient toujours à Instagram + TikTok, peu importe ce que tu choisis
+
+Regarde la fonction create-checkout (celle qui t'envoie vers Stripe) :
+js
+
+success_url: `${siteUrl}/?success=true&niche=${...}&count=${...}`
+
+Elle ne transmet que la niche et le nombre d'idées dans le lien de retour. Elle "oublie" complètement tes plateformes, ton ton, et ton objectif choisis avant de payer.
+
+Résultat : quand Stripe te renvoie sur ton site après paiement, c'est une page toute neuve qui se charge — et une page neuve revient automatiquement aux réglages par défaut du formulaire, qui sont : Instagram + TikTok cochés, ton "Fun et décontracté", objectif "Équilibré". C'est exactement ce que tu observes. Ce n'est pas aléatoire, c'est mécanique : rien n'a été "mémorisé" entre le moment où tu cliques sur "Acheter" et le moment où tu reviens.
+
+La solution de principe : il faut que le bouton d'achat transmette tous tes choix (pas juste la niche) dans le lien vers Stripe, pour qu'ils puissent être restaurés au retour.
+Bug 2 : pourquoi 14 idées ne marche jamais
+
+Deux causes possibles, probablement combinées :
+
+    max_tokens: 3500 est trop juste pour 14 idées aussi détaillées (hook + concept + structure + format + CTA × 14). Si Mistral atteint cette limite en plein milieu de sa réponse, le JSON est coupé au mauvais endroit → invalide → ton code le rejette ("Format JSON invalide"). C'est un peu comme demander un roman mais couper le budget de pages en plein chapitre.
+    Le temps d'exécution. Vercel, comme Netlify avant, limite le temps qu'une fonction serveur gratuite a le droit de tourner (souvent 10 secondes sur le plan gratuit). Générer 14 idées très riches peut dépasser ce temps et se faire couper en plein milieu — exactement le même symptôme qu'on avait eu avec Netlify.
+
+Mon avis honnête sur generate-ideas.js
+
+Le code est en fait bien pensé sur plusieurs points : le prompt système est précis, la règle "objectif strict si non-équilibré" est claire, la logique de secours qui répartit les piliers si l'IA oublie d'en préciser un est une bonne idée défensive. Ce n'est pas un mauvais code.
+
+Les deux vrais points faibles sont : le budget de tokens trop court pour les gros volumes, et l'absence de vérification qu'il reste des idées valides avant de répondre (si rawIdeas est vide après un JSON mal formé, ça pourrait renvoyer un tableau vide sans le signaler clairement comme une erreur).
+
+Pas besoin qu'on règle tout maintenant. Dis-moi juste si tu veux qu'on corrige ça tout de suite (deux petites modifications ciblées, pas une refonte), ou si tu préfères souffler d'abord.
+Message collapsed
+Thought for 6s
+
+Je vois, et je m'arrête une seconde avec toi. Tu n'as pas à comprendre le "pourquoi" technique en détail. Ce n'était pas nécessaire de te submerger avec ça — mon erreur de te l'avoir expliqué comme si tu devais l'assimiler. Ce qui compte, c'est le résultat, pas le mécanisme.
+
+Deux vraies options, sans aucune pression pour l'une ou l'autre :
+
+Option A — Je fais tout, tu n'as qu'à copier-coller. Je corrige les 2 fichiers concernés maintenant, je te les donne prêts à l'emploi, tu les colles sur GitHub (3 clics comme d'habitude), et c'est fini. Pas d'explication technique nécessaire de ta part, juste "colle ça, clique là".
+
+Option B — On s'arrête là pour aujourd'hui. Le site fonctionne déjà en grande partie (la démo gratuite marche, le design est bon, Stripe redirige). Ces 2 bugs ne l'empêchent pas d'exister. Rien ne t'oblige à les régler maintenant. Tu peux fermer l'ordinateur, revenir demain ou dans 3 jours, frais — le projet t'attendra, il ne se dégrade pas tout seul.
+
+Dis-moi juste laquelle tu choisis ("A" ou "B", ou même juste "je m'arrête"), rien d'autre à réfléchir de ton côté.
+
+A
+Thought for 18s
+
+Compris. Je fais tout, tu n'auras qu'à coller. Je prépare les 3 fichiers corrigés.
+Created 3 files, ran 2 commands, read a file · 1 note
+
+Voilà les 3 fichiers, prêts à copier-coller tels quels. Ce que chacun corrige :
+
+    index.html → mémorise tes plateformes/ton/objectif avant Stripe, et les remet en place au retour
+    create-checkout.js → transmet ces choix dans le lien de retour au lieu de les "oublier"
+    generate-ideas.js → plus de marge pour 14 idées (le prompt demande maintenant des réponses plus concises pour ne pas se faire couper, et le message d'erreur devient clair si jamais ça arrive quand même)
+
+Marche à suivre : remplace les 3 fichiers sur GitHub, un par un
+
+Pour chacun des 3 fichiers, même méthode que d'habitude :
+
+    Va sur github.com/Tom58878/idea-planner
+    Clique sur le fichier à remplacer (index.html, ou api/generate-ideas.js, ou api/create-checkout.js)
+    Crayon ✏️ → Ctrl+A → Suppr
+    Colle le nouveau contenu (celui que je viens de te donner)
+    "Commit changes" → confirme
+
+Une fois les 3 remplacés, Vercel va probablement redéployer tout seul automatiquement (à la différence de Netlify, Vercel se relance souvent sans bouton à cliquer — regarde juste ton tableau de bord Vercel après quelques minutes).
+
+Prends ton temps, un fichier à la fois, pas de pression.
+Index
+Code · HTML 
+Generate ideas
+JS 
+Create checkout
+JS 
+
+
+Claude is AI and can make mistakes. Please double-check responses.
+Index · HTML
 <!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Le Planificateur</title>
-
+ 
   <!-- Google Analytics -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-314N68PYLC"></script>
   <script>
@@ -13,13 +91,13 @@
     gtag('js', new Date());
     gtag('config', 'G-314N68PYLC');
   </script>
-
+ 
   <!-- Stripe JS -->
   <script src="https://js.stripe.com/v3/"></script>
-
+ 
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
-
+ 
     :root{
       --cork-1:#7a5a3f;
       --cork-2:#6b4d34;
@@ -33,9 +111,9 @@
       --yt:#d64545;
       --li:#2f6fb0;
     }
-
+ 
     *{box-sizing:border-box;}
-
+ 
     html, body{min-height:100%; margin:0; padding:0;}
     .board-wrap{
       font-family:'Inter',sans-serif;
@@ -49,7 +127,7 @@
       padding:28px 22px 40px;
       min-height:100vh;
     }
-
+ 
     .board-header{text-align:center; margin-bottom:26px;}
     .board-title{
       font-family:'Permanent Marker', cursive;
@@ -59,7 +137,7 @@
       margin:0 0 4px;
     }
     .board-sub{color:rgba(250,246,236,.75); font-size:14px; font-weight:500; max-width:480px; margin:0 auto;}
-
+ 
     .card-form{
       background:var(--paper); max-width:640px; margin:0 auto 34px; padding:22px 24px 20px;
       border-radius:3px; position:relative;
@@ -72,7 +150,7 @@
       background:radial-gradient(circle at 35% 30%, #ff8a80, #b0201a 70%);
       box-shadow:0 3px 6px var(--pin-shadow);
     }
-
+ 
     .form-row{margin-bottom:14px;}
     .form-label{
       display:block; font-size:12px; font-weight:700; text-transform:uppercase;
@@ -83,7 +161,7 @@
       font-family:'Inter',sans-serif; font-size:14.5px; background:#fff; color:var(--ink);
     }
     .form-input:focus, .form-select:focus{outline:2px solid var(--gold); outline-offset:1px; border-color:var(--gold);}
-
+ 
     .secondary-params{background:#f1ece0; border-radius:8px; padding:12px 14px 4px; margin-top:4px;}
     .form-label-sm{
       display:block; font-size:10.5px; font-weight:700; text-transform:uppercase;
@@ -93,7 +171,7 @@
       width:100%; padding:7px 9px; border:1.5px solid #d8cdb8; border-radius:6px;
       font-family:'Inter',sans-serif; font-size:13px; background:#fff; color:var(--ink);
     }
-
+ 
     .chip-row{display:flex; flex-wrap:wrap; gap:8px;}
     .chip{
       padding:7px 13px; border-radius:20px; border:1.5px solid #d8cdb8; background:#fff;
@@ -107,10 +185,10 @@
     .chip[data-p="linkedin"].on{background:var(--li); border-color:var(--li); color:#fff;}
     .chip-dot{width:8px; height:8px; border-radius:50%; background:#ccc;}
     .chip.on .chip-dot{background:#fff;}
-
+ 
     .form-bottom{display:flex; align-items:flex-end; justify-content:space-between; gap:14px; margin-top:16px; flex-wrap:wrap;}
     .err-msg{color:#7a1f1f; font-size:13px; font-weight:600; margin-top:10px;}
-
+ 
     .pricing-grid{
       display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:16px;
       max-width:640px; margin:24px auto 0;
@@ -134,7 +212,8 @@
     .pay-btn:hover{background:var(--ink-soft);}
     .pay-btn.featured-btn{background:var(--gold); color:#3a2a06;}
     .pay-btn.featured-btn:hover{background:#d4a030;}
-
+    .pay-btn:disabled{opacity:.6; cursor:wait;}
+ 
     .notes-grid{
       display:grid; grid-template-columns:repeat(auto-fill, minmax(280px,1fr)); gap:22px 18px;
       max-width:1100px; margin:0 auto;
@@ -163,7 +242,7 @@
     .pillar-tag.storytelling{background:#3fa15a;}
     .pillar-tag.vente{background:#d64545;}
     .pillar-tag.viralite{background:#e8842e;}
-
+ 
     .block-label{
       font-size:10.5px; font-weight:800; text-transform:uppercase; letter-spacing:.05em;
       color:var(--ink-soft); margin:9px 0 3px;
@@ -190,7 +269,7 @@
     .ptag{font-size:10.5px; font-weight:700; padding:3px 8px; border-radius:10px; color:#fff; text-transform:uppercase; letter-spacing:.03em;}
     .ptag.instagram{background:var(--ig);} .ptag.tiktok{background:var(--tiktok);}
     .ptag.youtube{background:var(--yt);} .ptag.linkedin{background:var(--li);}
-
+ 
     .toolbar{max-width:1100px; margin:0 auto 16px; display:flex; justify-content:flex-end; gap:10px;}
     .copy-btn{
       font-family:'Inter'; font-size:12.5px; font-weight:700; background:rgba(250,246,236,.9);
@@ -198,7 +277,7 @@
     }
     .copy-btn:hover{background:#fff;}
     .loading-wrap{text-align:center; color:var(--paper); font-weight:600; font-size:14px; padding:30px 0;}
-
+ 
     @media (max-width:480px){
       .board-wrap{padding:20px 12px 30px;}
       .card-form{padding:18px 16px 16px;}
@@ -206,19 +285,19 @@
   </style>
 </head>
 <body>
-
+ 
 <div class="board-wrap">
   <div class="board-header">
     <h1 class="board-title">📌 Le Planificateur</h1>
     <p class="board-sub">Ta niche, tes plateformes, 30 secondes plus tard : tes idées de contenu prêtes à tourner.</p>
   </div>
-
+ 
   <div class="card-form">
     <div class="form-row">
       <label class="form-label" for="niche">Ta niche / ton sujet</label>
       <input class="form-input" id="niche" placeholder="ex : coaching sportif pour débutants, cuisine végétarienne..." />
     </div>
-
+ 
     <div class="form-row">
       <label class="form-label">Plateformes</label>
       <div class="chip-row" id="chipRow">
@@ -228,7 +307,7 @@
         <div class="chip" data-p="linkedin"><span class="chip-dot"></span>LinkedIn</div>
       </div>
     </div>
-
+ 
     <div class="secondary-params">
       <div class="form-row" style="display:flex; gap:14px; flex-wrap:wrap; margin-bottom:10px;">
         <div style="flex:1; min-width:130px;">
@@ -252,7 +331,7 @@
         </div>
       </div>
     </div>
-
+ 
     <!-- Grille des Offres -->
     <div class="pricing-grid">
       <div class="price-card">
@@ -260,13 +339,13 @@
         <div class="price-val">Gratuit</div>
         <button class="pay-btn" id="btnFree">Générer 1 idée</button>
       </div>
-
+ 
       <div class="price-card">
         <div class="price-title">🚀 Pack Starter</div>
         <div class="price-val">2,99 €</div>
         <button class="pay-btn" id="btnStarter">Acheter 5 idées</button>
       </div>
-
+ 
       <div class="price-card featured">
         <span class="price-badge">Recommandé</span>
         <div class="price-title">🔥 Pack Pro</div>
@@ -274,51 +353,60 @@
         <button class="pay-btn featured-btn" id="btnPremium">Acheter 14 idées</button>
       </div>
     </div>
-
+ 
     <div class="form-bottom" style="justify-content:center;">
       <span id="errMsg" class="err-msg"></span>
     </div>
   </div>
-
+ 
   <div class="toolbar" id="toolbar" style="display:none;">
     <button class="copy-btn" id="copyBtn">Copier tout le texte</button>
   </div>
-
+ 
   <div id="resultsZone"></div>
 </div>
-
+ 
 <script>
 (function(){
   const chips = document.querySelectorAll('.chip');
   chips.forEach(c => c.addEventListener('click', () => c.classList.toggle('on')));
-
+ 
   const errMsg = document.getElementById('errMsg');
   const resultsZone = document.getElementById('resultsZone');
   const toolbar = document.getElementById('toolbar');
   const copyBtn = document.getElementById('copyBtn');
-
+  const allPayBtns = () => document.querySelectorAll('.pay-btn');
+ 
   const PRICE_STARTER = 'price_1U0jQuAJrUXZ5lo7f6juLGoR';
   const PRICE_PREMIUM = 'price_1U0jRUAJrUXZ5lo7qFS1CDPv';
-
+ 
   let lastIdeas = [];
-
+ 
   function selectedPlatforms(){
     return Array.from(chips).filter(c => c.classList.contains('on')).map(c => c.dataset.p);
   }
-
+ 
+  // Remet à jour l'état visuel des chips de plateforme à partir d'une liste (ex: après retour Stripe)
+  function setPlatforms(list){
+    if(!list || !list.length) return;
+    chips.forEach(c => {
+      c.classList.toggle('on', list.includes(c.dataset.p));
+    });
+  }
+ 
   function pinColor(seed){
     const colors = ['#ff8a80','#8ad1ff','#c9f27a','#ffd27a'];
     return colors[seed % colors.length];
   }
-
+ 
   function renderLoading(){
     resultsZone.innerHTML = `<div class="loading-wrap">Le tableau se remplit d'idées... 📌</div>`;
   }
-
+ 
   function renderError(msg){
     errMsg.textContent = msg;
   }
-
+ 
   function pillarClass(p){
     const key = (p||'').toLowerCase();
     if(key.includes('vente')) return 'vente';
@@ -326,7 +414,7 @@
     if(key.includes('viral')) return 'viralite';
     return 'education';
   }
-
+ 
   function renderIdeas(ideas, userTone){
     toolbar.style.display = 'flex';
     resultsZone.innerHTML = `<div class="notes-grid">${
@@ -341,29 +429,29 @@
             </div>
             <button class="card-copy-btn" data-idx="${i}" title="Copier ce post-it">📋</button>
           </div>
-
+ 
           <div class="block-label">🪝 Hook</div>
           <div class="hook-text">${idea.hook}</div>
-
+ 
           <div class="block-label">💡 Concept</div>
           <p class="concept-text">${idea.concept}</p>
-
+ 
           <div class="block-label">📝 Structure</div>
           <ol class="structure-list">${
             (idea.structure || []).map(s => `<li>${s}</li>`).join('')
           }</ol>
-
+ 
           <div class="block-label">⚙️ Format</div>
           <div class="format-line">${idea.format}</div>
           <div class="cta-text">📣 ${idea.cta}</div>
-
+ 
           <div class="platform-tags" style="margin-top:9px;">${
             (idea.platforms || []).map(p => `<span class="ptag ${p}">${p}</span>`).join('')
           }</div>
         </div>
       `).join('')
     }</div>`;
-
+ 
     resultsZone.querySelectorAll('.card-copy-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const idea = lastIdeas[parseInt(btn.dataset.idx, 10)];
@@ -375,7 +463,7 @@
       });
     });
   }
-
+ 
   async function generateIdeas(countOverride){
     const niche = document.getElementById('niche').value.trim();
     const platforms = selectedPlatforms();
@@ -383,56 +471,67 @@
     const objective = document.getElementById('objective').value;
     const count = countOverride || "1";
     errMsg.textContent = '';
-
+ 
     if(!niche){ renderError('Écris ta niche pour commencer.'); return; }
     if(platforms.length === 0){ renderError('Choisis au moins une plateforme.'); return; }
-
+ 
     if (typeof gtag === 'function') gtag('event', 'generate_clicked', { 'niche': niche });
-
+ 
     renderLoading();
-
+ 
     try{
       const response = await fetch("/api/generate-ideas", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ niche, platforms, tone, count, objective })
       });
-
+ 
       const data = await response.json();
       if(!response.ok || data.error) throw new Error(data.error || 'request-failed');
-
+ 
       lastIdeas = data.ideas;
       renderIdeas(data.ideas, tone);
     }catch(e){
       resultsZone.innerHTML = '';
-      renderError("Erreur lors de la génération. Réessaie !");
+      renderError("Erreur lors de la génération : " + (e.message || "réessaie."));
     }
   }
-
+ 
   async function checkout(priceId, eventName, count){
     const niche = document.getElementById('niche').value.trim();
     if(!niche){ renderError('Entre d\'abord ta niche ci-dessus.'); return; }
-
+ 
+    const platforms = selectedPlatforms();
+    if(platforms.length === 0){ renderError('Choisis au moins une plateforme.'); return; }
+ 
+    const tone = document.getElementById('tone').value;
+    const objective = document.getElementById('objective').value;
+ 
     if (typeof gtag === 'function') gtag('event', eventName);
-
+ 
+    allPayBtns().forEach(b => b.disabled = true);
+ 
     try{
+      // On transmet TOUS les choix (pas juste la niche) pour qu'ils soient restaurés après paiement
       const res = await fetch("/api/create-checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ priceId, niche, count })
+        body: JSON.stringify({ priceId, niche, count, platforms, tone, objective })
       });
       const data = await res.json();
-
+ 
       if(data.url){
         window.location.href = data.url;
       } else {
         renderError("Impossible d'ouvrir le paiement Stripe.");
+        allPayBtns().forEach(b => b.disabled = false);
       }
     }catch(e){
       renderError("Erreur de connexion au serveur de paiement.");
+      allPayBtns().forEach(b => b.disabled = false);
     }
   }
-
+ 
   function ideaToText(idea, defaultTone){
     return `🎯 Objectif : ${idea.objective}\n` +
       `🎭 Ton : ${idea.tone || defaultTone}\n` +
@@ -443,23 +542,35 @@
       `📣 CTA : ${idea.cta}\n` +
       `📱 Plateformes : ${(idea.platforms||[]).join(', ')}\n`;
   }
-
+ 
   document.getElementById('btnFree').addEventListener('click', () => generateIdeas("1"));
   document.getElementById('btnStarter').addEventListener('click', () => checkout(PRICE_STARTER, 'starter_clicked', '5'));
   document.getElementById('btnPremium').addEventListener('click', () => checkout(PRICE_PREMIUM, 'premium_clicked', '14'));
-
+ 
+  // Au retour de Stripe : on restaure TOUS les choix (plateformes, ton, objectif) avant de générer
   window.addEventListener('DOMContentLoaded', () => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('success') === 'true') {
       const urlNiche = params.get('niche') || '';
       const urlCount = params.get('count') || '5';
+      const urlPlatforms = (params.get('platforms') || '').split(',').filter(Boolean);
+      const urlTone = params.get('tone') || '';
+      const urlObjective = params.get('objective') || 'balanced';
+ 
       if (urlNiche) {
         document.getElementById('niche').value = urlNiche;
+        setPlatforms(urlPlatforms);
+        if (urlTone) document.getElementById('tone').value = urlTone;
+        document.getElementById('objective').value = urlObjective;
+ 
         generateIdeas(urlCount);
+ 
+        // Nettoie l'URL pour éviter une double génération si la page est rechargée
+        window.history.replaceState({}, document.title, window.location.pathname);
       }
     }
   });
-
+ 
   copyBtn.addEventListener('click', () => {
     const tone = document.getElementById('tone').value;
     const text = lastIdeas.map((idea, i) => `JOUR ${i+1}\n` + ideaToText(idea, tone)).join('\n---\n\n');
@@ -470,6 +581,7 @@
   });
 })();
 </script>
-
+ 
 </body>
 </html>
+ 
