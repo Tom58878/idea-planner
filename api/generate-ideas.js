@@ -39,17 +39,20 @@ RÈGLES DE GÉNÉRATION
 4. HOOKS PERCUTANTS (CRUCIAL) : 
    Le hook doit être une phrase réellement utilisable dans les 3 premières secondes d'une vidéo ou la première ligne d'un post. 
    Il doit donner une envie irrésistible de continuer. 
-   Évite absolument les titres génériques (ex: "5 conseils pour..."). Utilise des leviers psychologiques forts (ex: "Tu nettoies ton visage tous les jours ? Tu fais peut-être cette erreur.").
+   Évite absolument les titres génériques (ex: "5 conseils pour..."). Utilise des leviers psychologiques forts.
 
 5. ANTI-CONTENU GÉNÉRIQUE :
    Ne génère JAMAIS d'idées vagues. Chaque idée doit avoir un angle précis, une situation concrète et une valeur claire et actionnable pour l'audience.
 
 6. PLATEFORMES ET BONNES PRATIQUES :
    - Limite strictement aux plateformes demandées : [${platforms.join(', ')}].
-   - TikTok : Privilégie les hooks rapides, l'attention dans les premières secondes, les formats dynamiques et mémorisables.
-   - Instagram : Privilégie les formats visuels, les carrousels sauvegardables, les Reels engageants et les interactions communautaires.
-   - LinkedIn : Privilégie les angles professionnels, les opinions, les expériences, les apprentissages et la crédibilité.
+   - TikTok : Privilégie les hooks rapides, l'attention dans les premières secondes, les formats dynamiques.
+   - Instagram : Privilégie les formats visuels, les carrousels sauvegardables, les Reels engageants.
+   - LinkedIn : Privilégie les angles professionnels, les opinions, les apprentissages et la crédibilité.
    - YouTube : Privilégie la profondeur, la narration, la rétention et la valeur éducative.
+
+7. CONCISION OBLIGATOIRE (IMPORTANT) :
+   Pour rester dans la limite de longueur de réponse, garde le "concept" à 1 phrase courte, et la "structure" à exactement 3 étapes courtes (une ligne chacune). Ne rallonge pas inutilement.
 
 Format de sortie JSON obligatoire :
 {
@@ -67,7 +70,7 @@ Format de sortie JSON obligatoire :
   ]
 }`;
 
-  const userPrompt = `Génère exactement ${targetCount} idée(s) ultra-qualitative(s) pour la niche "${niche}" avec le ton "${tone}" et l'objectif "${isBalanced ? 'Équilibré' : objective}". Respecte scrupuleusement le format JSON { "ideas": [...] }.`;
+  const userPrompt = `Génère exactement ${targetCount} idée(s) ultra-qualitative(s) mais CONCISES pour la niche "${niche}" avec le ton "${tone}" et l'objectif "${isBalanced ? 'Équilibré' : objective}". Respecte scrupuleusement le format JSON { "ideas": [...] } et la règle de concision (structure en 3 étapes courtes).`;
 
   try {
     const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
@@ -78,7 +81,7 @@ Format de sortie JSON obligatoire :
       },
       body: JSON.stringify({
         model: 'mistral-small-latest',
-        max_tokens: 3500,
+        max_tokens: 7000,
         response_format: { type: 'json_object' },
         messages: [
           { role: 'system', content: systemPrompt },
@@ -93,6 +96,7 @@ Format de sortie JSON obligatoire :
     }
 
     const data = await response.json();
+    const finishReason = data.choices?.[0]?.finish_reason;
     const text = data.choices?.[0]?.message?.content || '';
     const clean = text.replace(/```json|```/g, '').trim();
 
@@ -100,11 +104,21 @@ Format de sortie JSON obligatoire :
     try {
       parsed = JSON.parse(clean);
     } catch (parseErr) {
-      return res.status(502).json({ error: 'Format JSON invalide', detail: text.slice(0, 500) });
+      // La réponse a probablement été coupée avant la fin (JSON incomplet)
+      return res.status(502).json({
+        error: finishReason === 'length'
+          ? 'La réponse a été coupée avant la fin (trop longue). Réessaie avec moins d\'idées ou réessaie simplement.'
+          : 'Format JSON invalide',
+        detail: text.slice(0, 500)
+      });
     }
 
     const rawIdeas = Array.isArray(parsed) ? parsed : (parsed.ideas || []);
-    
+
+    if (rawIdeas.length === 0) {
+      return res.status(502).json({ error: 'Aucune idée générée, réessaie.' });
+    }
+
     // Sécurisation absolue de la sortie
     const ideas = rawIdeas.slice(0, targetCount).map((idea, index) => {
       let assignedObj = idea.objective;
@@ -126,3 +140,6 @@ Format de sortie JSON obligatoire :
     return res.status(500).json({ error: 'Erreur serveur', detail: String(e) });
   }
 };
+
+// Autorise un peu plus de temps d'exécution si le forfait Vercel le permet (sans effet sinon)
+module.exports.config = { maxDuration: 30 };
