@@ -1,11 +1,10 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Le Planificateur</title>
- 
+
   <!-- Google Analytics -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-314N68PYLC"></script>
   <script>
@@ -14,13 +13,10 @@
     gtag('js', new Date());
     gtag('config', 'G-314N68PYLC');
   </script>
- 
-  <!-- Stripe JS -->
-  <script src="https://js.stripe.com/v3/"></script>
- 
+
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
- 
+
     :root{
       --cork-1:#7a5a3f;
       --cork-2:#6b4d34;
@@ -34,9 +30,9 @@
       --yt:#d64545;
       --li:#2f6fb0;
     }
- 
+
     *{box-sizing:border-box;}
- 
+
     html, body{min-height:100%; margin:0; padding:0;}
     .board-wrap{
       font-family:'Inter',sans-serif;
@@ -50,7 +46,7 @@
       padding:28px 22px 40px;
       min-height:100vh;
     }
- 
+
     .board-header{text-align:center; margin-bottom:26px;}
     .board-title{
       font-family:'Permanent Marker', cursive;
@@ -60,7 +56,7 @@
       margin:0 0 4px;
     }
     .board-sub{color:rgba(250,246,236,.75); font-size:14px; font-weight:500; max-width:480px; margin:0 auto;}
- 
+
     .card-form{
       background:var(--paper); max-width:640px; margin:0 auto 34px; padding:22px 24px 20px;
       border-radius:3px; position:relative;
@@ -73,7 +69,7 @@
       background:radial-gradient(circle at 35% 30%, #ff8a80, #b0201a 70%);
       box-shadow:0 3px 6px var(--pin-shadow);
     }
- 
+
     .form-row{margin-bottom:14px;}
     .form-label{
       display:block; font-size:12px; font-weight:700; text-transform:uppercase;
@@ -84,7 +80,7 @@
       font-family:'Inter',sans-serif; font-size:14.5px; background:#fff; color:var(--ink);
     }
     .form-input:focus, .form-select:focus{outline:2px solid var(--gold); outline-offset:1px; border-color:var(--gold);}
- 
+
     .secondary-params{background:#f1ece0; border-radius:8px; padding:12px 14px 4px; margin-top:4px;}
     .form-label-sm{
       display:block; font-size:10.5px; font-weight:700; text-transform:uppercase;
@@ -94,7 +90,7 @@
       width:100%; padding:7px 9px; border:1.5px solid #d8cdb8; border-radius:6px;
       font-family:'Inter',sans-serif; font-size:13px; background:#fff; color:var(--ink);
     }
- 
+
     .chip-row{display:flex; flex-wrap:wrap; gap:8px;}
     .chip{
       padding:7px 13px; border-radius:20px; border:1.5px solid #d8cdb8; background:#fff;
@@ -108,10 +104,10 @@
     .chip[data-p="linkedin"].on{background:var(--li); border-color:var(--li); color:#fff;}
     .chip-dot{width:8px; height:8px; border-radius:50%; background:#ccc;}
     .chip.on .chip-dot{background:#fff;}
- 
+
     .form-bottom{display:flex; align-items:flex-end; justify-content:space-between; gap:14px; margin-top:16px; flex-wrap:wrap;}
     .err-msg{color:#7a1f1f; font-size:13px; font-weight:600; margin-top:10px;}
- 
+
     .pricing-grid{
       display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:16px;
       max-width:640px; margin:24px auto 0;
@@ -136,7 +132,7 @@
     .pay-btn.featured-btn{background:var(--gold); color:#3a2a06;}
     .pay-btn.featured-btn:hover{background:#d4a030;}
     .pay-btn:disabled{opacity:.6; cursor:wait;}
- 
+
     .notes-grid{
       display:grid; grid-template-columns:repeat(auto-fill, minmax(280px,1fr)); gap:22px 18px;
       max-width:1100px; margin:0 auto;
@@ -165,7 +161,7 @@
     .pillar-tag.storytelling{background:#3fa15a;}
     .pillar-tag.vente{background:#d64545;}
     .pillar-tag.viralite{background:#e8842e;}
- 
+
     .block-label{
       font-size:10.5px; font-weight:800; text-transform:uppercase; letter-spacing:.05em;
       color:var(--ink-soft); margin:9px 0 3px;
@@ -192,7 +188,7 @@
     .ptag{font-size:10.5px; font-weight:700; padding:3px 8px; border-radius:10px; color:#fff; text-transform:uppercase; letter-spacing:.03em;}
     .ptag.instagram{background:var(--ig);} .ptag.tiktok{background:var(--tiktok);}
     .ptag.youtube{background:var(--yt);} .ptag.linkedin{background:var(--li);}
- 
+
     .toolbar{max-width:1100px; margin:0 auto 16px; display:flex; justify-content:flex-end; gap:10px;}
     .copy-btn{
       font-family:'Inter'; font-size:12.5px; font-weight:700; background:rgba(250,246,236,.9);
@@ -200,7 +196,7 @@
     }
     .copy-btn:hover{background:#fff;}
     .loading-wrap{text-align:center; color:var(--paper); font-weight:600; font-size:14px; padding:30px 0;}
- 
+
     @media (max-width:480px){
       .board-wrap{padding:20px 12px 30px;}
       .card-form{padding:18px 16px 16px;}
@@ -208,19 +204,19 @@
   </style>
 </head>
 <body>
- 
+
 <div class="board-wrap">
   <div class="board-header">
     <h1 class="board-title">📌 Le Planificateur</h1>
     <p class="board-sub">Ta niche, tes plateformes, 30 secondes plus tard : tes idées de contenu prêtes à tourner.</p>
   </div>
- 
+
   <div class="card-form">
     <div class="form-row">
       <label class="form-label" for="niche">Ta niche / ton sujet</label>
       <input class="form-input" id="niche" placeholder="ex : coaching sportif pour débutants, cuisine végétarienne..." />
     </div>
- 
+
     <div class="form-row">
       <label class="form-label">Plateformes</label>
       <div class="chip-row" id="chipRow">
@@ -230,7 +226,7 @@
         <div class="chip" data-p="linkedin"><span class="chip-dot"></span>LinkedIn</div>
       </div>
     </div>
- 
+
     <div class="secondary-params">
       <div class="form-row" style="display:flex; gap:14px; flex-wrap:wrap; margin-bottom:10px;">
         <div style="flex:1; min-width:130px;">
@@ -254,7 +250,7 @@
         </div>
       </div>
     </div>
- 
+
     <!-- Grille des Offres -->
     <div class="pricing-grid">
       <div class="price-card">
@@ -262,13 +258,13 @@
         <div class="price-val">Gratuit</div>
         <button class="pay-btn" id="btnFree">Générer 1 idée</button>
       </div>
- 
+
       <div class="price-card">
         <div class="price-title">🚀 Pack Starter</div>
         <div class="price-val">2,99 €</div>
         <button class="pay-btn" id="btnStarter">Acheter 5 idées</button>
       </div>
- 
+
       <div class="price-card featured">
         <span class="price-badge">Recommandé</span>
         <div class="price-title">🔥 Pack Pro</div>
@@ -276,60 +272,56 @@
         <button class="pay-btn featured-btn" id="btnPremium">Acheter 14 idées</button>
       </div>
     </div>
- 
+
     <div class="form-bottom" style="justify-content:center;">
       <span id="errMsg" class="err-msg"></span>
     </div>
   </div>
- 
+
   <div class="toolbar" id="toolbar" style="display:none;">
     <button class="copy-btn" id="copyBtn">Copier tout le texte</button>
   </div>
- 
+
   <div id="resultsZone"></div>
 </div>
- 
+
 <script>
 (function(){
   const chips = document.querySelectorAll('.chip');
   chips.forEach(c => c.addEventListener('click', () => c.classList.toggle('on')));
- 
+
   const errMsg = document.getElementById('errMsg');
   const resultsZone = document.getElementById('resultsZone');
   const toolbar = document.getElementById('toolbar');
   const copyBtn = document.getElementById('copyBtn');
   const allPayBtns = () => document.querySelectorAll('.pay-btn');
- 
-  const PRICE_STARTER = 'price_1U0jQuAJrUXZ5lo7f6juLGoR';
-  const PRICE_PREMIUM = 'price_1U0jRUAJrUXZ5lo7qFS1CDPv';
- 
+
   let lastIdeas = [];
- 
+
   function selectedPlatforms(){
     return Array.from(chips).filter(c => c.classList.contains('on')).map(c => c.dataset.p);
   }
- 
-  // Remet à jour l'état visuel des chips de plateforme à partir d'une liste (ex: après retour Stripe)
+
   function setPlatforms(list){
     if(!list || !list.length) return;
     chips.forEach(c => {
       c.classList.toggle('on', list.includes(c.dataset.p));
     });
   }
- 
+
   function pinColor(seed){
     const colors = ['#ff8a80','#8ad1ff','#c9f27a','#ffd27a'];
     return colors[seed % colors.length];
   }
- 
+
   function renderLoading(){
     resultsZone.innerHTML = `<div class="loading-wrap">Le tableau se remplit d'idées... 📌</div>`;
   }
- 
+
   function renderError(msg){
     errMsg.textContent = msg;
   }
- 
+
   function pillarClass(p){
     const key = (p||'').toLowerCase();
     if(key.includes('vente')) return 'vente';
@@ -337,7 +329,7 @@
     if(key.includes('viral')) return 'viralite';
     return 'education';
   }
- 
+
   function renderIdeas(ideas, userTone){
     toolbar.style.display = 'flex';
     resultsZone.innerHTML = `<div class="notes-grid">${
@@ -352,29 +344,29 @@
             </div>
             <button class="card-copy-btn" data-idx="${i}" title="Copier ce post-it">📋</button>
           </div>
- 
+
           <div class="block-label">🪝 Hook</div>
           <div class="hook-text">${idea.hook}</div>
- 
+
           <div class="block-label">💡 Concept</div>
           <p class="concept-text">${idea.concept}</p>
- 
+
           <div class="block-label">📝 Structure</div>
           <ol class="structure-list">${
             (idea.structure || []).map(s => `<li>${s}</li>`).join('')
           }</ol>
- 
+
           <div class="block-label">⚙️ Format</div>
           <div class="format-line">${idea.format}</div>
           <div class="cta-text">📣 ${idea.cta}</div>
- 
+
           <div class="platform-tags" style="margin-top:9px;">${
             (idea.platforms || []).map(p => `<span class="ptag ${p}">${p}</span>`).join('')
           }</div>
         </div>
       `).join('')
     }</div>`;
- 
+
     resultsZone.querySelectorAll('.card-copy-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const idea = lastIdeas[parseInt(btn.dataset.idx, 10)];
@@ -386,7 +378,7 @@
       });
     });
   }
- 
+
   async function generateIdeas(countOverride){
     const niche = document.getElementById('niche').value.trim();
     const platforms = selectedPlatforms();
@@ -394,24 +386,24 @@
     const objective = document.getElementById('objective').value;
     const count = countOverride || "1";
     errMsg.textContent = '';
- 
+
     if(!niche){ renderError('Écris ta niche pour commencer.'); return; }
     if(platforms.length === 0){ renderError('Choisis au moins une plateforme.'); return; }
- 
+
     if (typeof gtag === 'function') gtag('event', 'generate_clicked', { 'niche': niche });
- 
+
     renderLoading();
- 
+
     try{
       const response = await fetch("/api/generate-ideas", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ niche, platforms, tone, count, objective })
       });
- 
+
       const data = await response.json();
       if(!response.ok || data.error) throw new Error(data.error || 'request-failed');
- 
+
       lastIdeas = data.ideas;
       renderIdeas(data.ideas, tone);
     }catch(e){
@@ -419,42 +411,33 @@
       renderError("Erreur lors de la génération : " + (e.message || "réessaie."));
     }
   }
- 
-  async function checkout(priceId, eventName, count){
+
+  // --- NOUVEAU SYSTÈME D'ENCAISSEMENT GUMROAD ---
+  function checkoutGumroad(url, eventName){
     const niche = document.getElementById('niche').value.trim();
-    if(!niche){ renderError('Entre d\'abord ta niche ci-dessus.'); return; }
- 
+    if(!niche){ 
+      renderError("Entre d'abord ta niche ci-dessus pour qu'on puisse la traiter après le paiement."); 
+      return; 
+    }
+
     const platforms = selectedPlatforms();
     if(platforms.length === 0){ renderError('Choisis au moins une plateforme.'); return; }
- 
+
     const tone = document.getElementById('tone').value;
     const objective = document.getElementById('objective').value;
- 
+    
+    // On sauvegarde tous les choix en mémoire avant d'envoyer le client payer
+    localStorage.setItem('savedNiche', niche);
+    localStorage.setItem('savedPlatforms', JSON.stringify(platforms));
+    localStorage.setItem('savedTone', tone);
+    localStorage.setItem('savedObjective', objective);
+    
     if (typeof gtag === 'function') gtag('event', eventName);
- 
-    allPayBtns().forEach(b => b.disabled = true);
- 
-    try{
-      // On transmet TOUS les choix (pas juste la niche) pour qu'ils soient restaurés après paiement
-      const res = await fetch("/api/create-checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ priceId, niche, count, platforms, tone, objective })
-      });
-      const data = await res.json();
- 
-      if(data.url){
-        window.location.href = data.url;
-      } else {
-        renderError("Impossible d'ouvrir le paiement Stripe.");
-        allPayBtns().forEach(b => b.disabled = false);
-      }
-    }catch(e){
-      renderError("Erreur de connexion au serveur de paiement.");
-      allPayBtns().forEach(b => b.disabled = false);
-    }
+    
+    // Redirection directe vers ta page de paiement Gumroad
+    window.location.href = url;
   }
- 
+
   function ideaToText(idea, defaultTone){
     return `🎯 Objectif : ${idea.objective}\n` +
       `🎭 Ton : ${idea.tone || defaultTone}\n` +
@@ -465,35 +448,50 @@
       `📣 CTA : ${idea.cta}\n` +
       `📱 Plateformes : ${(idea.platforms||[]).join(', ')}\n`;
   }
- 
+
+  // Branchement des boutons
   document.getElementById('btnFree').addEventListener('click', () => generateIdeas("1"));
-  document.getElementById('btnStarter').addEventListener('click', () => checkout(PRICE_STARTER, 'starter_clicked', '5'));
-  document.getElementById('btnPremium').addEventListener('click', () => checkout(PRICE_PREMIUM, 'premium_clicked', '14'));
- 
-  // Au retour de Stripe : on restaure TOUS les choix (plateformes, ton, objectif) avant de générer
+  document.getElementById('btnStarter').addEventListener('click', () => checkoutGumroad('https://cftwave.gumroad.com/l/xmslz', 'starter_clicked'));
+  document.getElementById('btnPremium').addEventListener('click', () => checkoutGumroad('https://cftwave.gumroad.com/l/ezlsmh', 'premium_clicked'));
+
+  // Au retour de l'achat Gumroad : on restaure TOUS les choix et on génère
   window.addEventListener('DOMContentLoaded', () => {
     const params = new URLSearchParams(window.location.search);
+    
+    const savedNiche = localStorage.getItem('savedNiche');
+    if (savedNiche) {
+      // Restauration de la Niche
+      document.getElementById('niche').value = savedNiche;
+      
+      // Restauration des Plateformes
+      const savedPlatforms = JSON.parse(localStorage.getItem('savedPlatforms') || '[]');
+      if (savedPlatforms.length) setPlatforms(savedPlatforms);
+      
+      // Restauration du Ton
+      const savedTone = localStorage.getItem('savedTone');
+      if (savedTone) document.getElementById('tone').value = savedTone;
+      
+      // Restauration de l'Objectif
+      const savedObjective = localStorage.getItem('savedObjective');
+      if (savedObjective) document.getElementById('objective').value = savedObjective;
+
+      // Nettoyage de la mémoire locale
+      localStorage.removeItem('savedNiche');
+      localStorage.removeItem('savedPlatforms');
+      localStorage.removeItem('savedTone');
+      localStorage.removeItem('savedObjective');
+    }
+
     if (params.get('success') === 'true') {
-      const urlNiche = params.get('niche') || '';
       const urlCount = params.get('count') || '5';
-      const urlPlatforms = (params.get('platforms') || '').split(',').filter(Boolean);
-      const urlTone = params.get('tone') || '';
-      const urlObjective = params.get('objective') || 'balanced';
- 
-      if (urlNiche) {
-        document.getElementById('niche').value = urlNiche;
-        setPlatforms(urlPlatforms);
-        if (urlTone) document.getElementById('tone').value = urlTone;
-        document.getElementById('objective').value = urlObjective;
- 
+      if (document.getElementById('niche').value) {
         generateIdeas(urlCount);
- 
         // Nettoie l'URL pour éviter une double génération si la page est rechargée
         window.history.replaceState({}, document.title, window.location.pathname);
       }
     }
   });
- 
+
   copyBtn.addEventListener('click', () => {
     const tone = document.getElementById('tone').value;
     const text = lastIdeas.map((idea, i) => `JOUR ${i+1}\n` + ideaToText(idea, tone)).join('\n---\n\n');
@@ -504,7 +502,6 @@
   });
 })();
 </script>
- 
+
 </body>
 </html>
- 
