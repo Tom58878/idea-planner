@@ -25,36 +25,15 @@ module.exports = async (req, res) => {
     objectiveInstruction = `RÈGLE ABSOLUE : L'objectif de TOUTES les cartes générées DOIT ÊTRE STRICTEMENT ET UNIQUEMENT "${objective}". L'interdiction est totale de changer d'objectif.`;
   }
 
-  const systemPrompt = `Tu es un directeur de stratégie de contenu senior, expert en copywriting, réseaux sociaux et psychologie de l'attention.
-Tu réponds UNIQUEMENT en JSON valide, sans balises markdown, sans texte d'introduction ni de conclusion.
+  const systemPrompt = `Tu es un directeur de stratégie de contenu senior, expert en copywriting, réseaux sociaux et psychologie de l'attention. Tu réponds UNIQUEMENT en JSON valide, sans balises markdown, sans texte d'introduction ni de conclusion.
 
-=========================
-RÈGLES DE GÉNÉRATION
-=========================
-
-1. NICHE ABSOLUE : Le sujet est "${niche}". Tout le contenu doit y être directement lié.
-2. TON EXIGÉ : Le ton demandé est "${tone || 'Fun et décontracté'}". Tu dois obligatoirement le refléter dans le hook, le concept, la structure et le CTA.
+RÈGLES DE GÉNÉRATION :
+1. NICHE : "${niche}"
+2. TON : "${tone || 'Fun et décontracté'}"
 3. OBJECTIF : ${objectiveInstruction}
+4. CONCISION : Concept à 1 phrase courte, structure à exactement 3 étapes courtes.
 
-4. HOOKS PERCUTANTS (CRUCIAL) : 
-   Le hook doit être une phrase réellement utilisable dans les 3 premières secondes d'une vidéo ou la première ligne d'un post. 
-   Il doit donner une envie irrésistible de continuer. 
-   Évite absolument les titres génériques (ex: "5 conseils pour..."). Utilise des leviers psychologiques forts.
-
-5. ANTI-CONTENU GÉNÉRIQUE :
-   Ne génère JAMAIS d'idées vagues. Chaque idée doit avoir un angle précis, une situation concrète et une valeur claire et actionnable pour l'audience.
-
-6. PLATEFORMES ET BONNES PRATIQUES :
-   - Limite strictement aux plateformes demandées : [${platforms.join(', ')}].
-   - TikTok : Privilégie les hooks rapides, l'attention dans les premières secondes, les formats dynamiques.
-   - Instagram : Privilégie les formats visuels, les carrousels sauvegardables, les Reels engageants.
-   - LinkedIn : Privilégie les angles professionnels, les opinions, les apprentissages et la crédibilité.
-   - YouTube : Privilégie la profondeur, la narration, la rétention et la valeur éducative.
-
-7. CONCISION OBLIGATOIRE (IMPORTANT) :
-   Pour rester dans la limite de longueur de réponse, garde le "concept" à 1 phrase courte, et la "structure" à exactement 3 étapes courtes (une ligne chacune). Ne rallonge pas inutilement.
-
-Format de sortie JSON obligatoire :
+Format JSON obligatoire :
 {
   "ideas": [
     {
@@ -70,7 +49,10 @@ Format de sortie JSON obligatoire :
   ]
 }`;
 
-  const userPrompt = `Génère exactement ${targetCount} idée(s) ultra-qualitative(s) mais CONCISES pour la niche "${niche}" avec le ton "${tone}" et l'objectif "${isBalanced ? 'Équilibré' : objective}". Respecte scrupuleusement le format JSON { "ideas": [...] } et la règle de concision (structure en 3 étapes courtes).`;
+  const userPrompt = `Génère exactement ${targetCount} idée(s) pour la niche "${niche}" avec le ton "${tone}".`;
+
+  // Ajustement dynamique des tokens selon le nombre d'idées demandées
+  const maxTokens = targetCount <= 5 ? 2000 : targetCount <= 10 ? 3000 : 4000;
 
   try {
     const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
@@ -81,7 +63,7 @@ Format de sortie JSON obligatoire :
       },
       body: JSON.stringify({
         model: 'mistral-small-latest',
-        max_tokens: 7000,
+        max_tokens: maxTokens,
         response_format: { type: 'json_object' },
         messages: [
           { role: 'system', content: systemPrompt },
@@ -92,49 +74,24 @@ Format de sortie JSON obligatoire :
 
     if (!response.ok) {
       const errText = await response.text();
-      return res.status(502).json({ error: 'Erreur API Mistral', detail: errText });
-    }
-
-    const data = await response.json();
-    const finishReason = data.choices?.[0]?.finish_reason;
-    const text = data.choices?.[0]?.message?.content || '';
-    const clean = text.replace(/```json|```/g, '').trim();
-
-    let parsed;
-    try {
-      parsed = JSON.parse(clean);
-    } catch (parseErr) {
-      // La réponse a probablement été coupée avant la fin (JSON incomplet)
-      return res.status(502).json({
-        error: finishReason === 'length'
-          ? 'La réponse a été coupée avant la fin (trop longue). Réessaie avec moins d\'idées ou réessaie simplement.'
-          : 'Format JSON invalide',
-        detail: text.slice(0, 500)
+      return res.status(response.status).json({
+        error: response.status === 429 ? 'Limite de requêtes Mistral atteinte (Rate Limit).' : 'Erreur API Mistral',
+        detail: errText
       });
     }
 
+    const data = await response.json();
+    const text = data.choices?.[0]?.message?.content || '';
+    const clean = text.replace(/```json|```/g, '').trim();
+
+    let parsed = JSON.parse(clean);
     const rawIdeas = Array.isArray(parsed) ? parsed : (parsed.ideas || []);
 
-    if (rawIdeas.length === 0) {
-      return res.status(502).json({ error: 'Aucune idée générée, réessaie.' });
-    }
-
-    // Sécurisation absolue de la sortie
-    const ideas = rawIdeas.slice(0, targetCount).map((idea, index) => {
-      let assignedObj = idea.objective;
-      if (!isBalanced) {
-        assignedObj = objective;
-      } else if (!assignedObj || assignedObj === "") {
-        const mix = ['Éducation / Expertise', 'Storytelling / Confiance', 'Vente / Conversion', 'Viralité / Engagement'];
-        assignedObj = mix[index % mix.length];
-      }
-      return {
-        ...idea,
-        objective: assignedObj,
-        tone: tone || idea.tone || 'Fun et décontracté',
-        platforms: platforms // on force les plateformes réellement choisies, on ne fait plus confiance à l'IA sur ce point
-      };
-    });
+    const ideas = rawIdeas.slice(0, targetCount).map((idea, index) => ({
+      ...idea,
+      tone: tone || idea.tone || 'Fun et décontracté',
+      platforms: platforms
+    }));
 
     return res.status(200).json({ ideas });
   } catch (e) {
@@ -142,5 +99,4 @@ Format de sortie JSON obligatoire :
   }
 };
 
-// Autorise un peu plus de temps d'exécution si le forfait Vercel le permet (sans effet sinon)
 module.exports.config = { maxDuration: 30 };
