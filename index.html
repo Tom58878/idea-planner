@@ -1,293 +1,3 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Le Planificateur</title>
- 
-  <!-- Google Analytics -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-314N68PYLC"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-314N68PYLC');
-  </script>
- 
-  <!-- Stripe JS -->
-  <script src="https://js.stripe.com/v3/"></script>
- 
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
- 
-    :root{
-      --cork-1:#7a5a3f;
-      --cork-2:#6b4d34;
-      --paper:#faf6ec;
-      --ink:#2b2420;
-      --ink-soft:#5b5049;
-      --pin-shadow: rgba(0,0,0,.45);
-      --gold:#e8b23d;
-      --ig:#c9558f;
-      --tiktok:#2bb8ac;
-      --yt:#d64545;
-      --li:#2f6fb0;
-    }
- 
-    *{box-sizing:border-box;}
- 
-    html, body{min-height:100%; margin:0; padding:0;}
-    .board-wrap{
-      font-family:'Inter',sans-serif;
-      color:var(--ink);
-      background:
-        radial-gradient(circle at 20% 15%, rgba(255,255,255,.06), transparent 40%),
-        radial-gradient(circle at 80% 85%, rgba(0,0,0,.12), transparent 45%),
-        repeating-linear-gradient(45deg, rgba(0,0,0,.03) 0px, rgba(0,0,0,.03) 2px, transparent 2px, transparent 6px),
-        linear-gradient(160deg, var(--cork-1), var(--cork-2));
-      border-radius:14px;
-      padding:28px 22px 40px;
-      min-height:100vh;
-    }
- 
-    .board-header{text-align:center; margin-bottom:26px;}
-    .board-title{
-      font-family:'Permanent Marker', cursive;
-      font-size:clamp(28px,4vw,42px);
-      color:var(--paper);
-      text-shadow:0 2px 0 rgba(0,0,0,.25);
-      margin:0 0 4px;
-    }
-    .board-sub{color:rgba(250,246,236,.75); font-size:14px; font-weight:500; max-width:480px; margin:0 auto;}
- 
-    .card-form{
-      background:var(--paper); max-width:640px; margin:0 auto 34px; padding:22px 24px 20px;
-      border-radius:3px; position:relative;
-      box-shadow:0 10px 22px rgba(0,0,0,.35), 0 1px 0 rgba(255,255,255,.4) inset;
-      transform:rotate(-0.6deg);
-    }
-    .card-form::before{
-      content:''; position:absolute; top:-11px; left:50%; transform:translateX(-50%);
-      width:18px; height:18px; border-radius:50%;
-      background:radial-gradient(circle at 35% 30%, #ff8a80, #b0201a 70%);
-      box-shadow:0 3px 6px var(--pin-shadow);
-    }
- 
-    .form-row{margin-bottom:14px;}
-    .form-label{
-      display:block; font-size:12px; font-weight:700; text-transform:uppercase;
-      letter-spacing:.06em; color:var(--ink-soft); margin-bottom:6px;
-    }
-    .form-input, .form-select{
-      width:100%; padding:10px 12px; border:1.5px solid #d8cdb8; border-radius:6px;
-      font-family:'Inter',sans-serif; font-size:14.5px; background:#fff; color:var(--ink);
-    }
-    .form-input:focus, .form-select:focus{outline:2px solid var(--gold); outline-offset:1px; border-color:var(--gold);}
- 
-    .secondary-params{background:#f1ece0; border-radius:8px; padding:12px 14px 4px; margin-top:4px;}
-    .form-label-sm{
-      display:block; font-size:10.5px; font-weight:700; text-transform:uppercase;
-      letter-spacing:.05em; color:var(--ink-soft); margin-bottom:4px;
-    }
-    .form-select-sm{
-      width:100%; padding:7px 9px; border:1.5px solid #d8cdb8; border-radius:6px;
-      font-family:'Inter',sans-serif; font-size:13px; background:#fff; color:var(--ink);
-    }
- 
-    .chip-row{display:flex; flex-wrap:wrap; gap:8px;}
-    .chip{
-      padding:7px 13px; border-radius:20px; border:1.5px solid #d8cdb8; background:#fff;
-      font-size:13px; font-weight:600; cursor:pointer; user-select:none;
-      display:flex; align-items:center; gap:6px; transition:transform .12s ease;
-    }
-    .chip:hover{transform:translateY(-1px);}
-    .chip[data-p="instagram"].on{background:var(--ig); border-color:var(--ig); color:#fff;}
-    .chip[data-p="tiktok"].on{background:var(--tiktok); border-color:var(--tiktok); color:#fff;}
-    .chip[data-p="youtube"].on{background:var(--yt); border-color:var(--yt); color:#fff;}
-    .chip[data-p="linkedin"].on{background:var(--li); border-color:var(--li); color:#fff;}
-    .chip-dot{width:8px; height:8px; border-radius:50%; background:#ccc;}
-    .chip.on .chip-dot{background:#fff;}
- 
-    .form-bottom{display:flex; align-items:flex-end; justify-content:space-between; gap:14px; margin-top:16px; flex-wrap:wrap;}
-    .err-msg{color:#7a1f1f; font-size:13px; font-weight:600; margin-top:10px;}
- 
-    .pricing-grid{
-      display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:16px;
-      max-width:640px; margin:24px auto 0;
-    }
-    .price-card{
-      background:#fff; border:1.5px solid #d8cdb8; border-radius:8px; padding:16px;
-      text-align:center; position:relative; box-shadow:0 4px 10px rgba(0,0,0,.08);
-    }
-    .price-card.featured{border-color:var(--gold); background:#fffdf5;}
-    .price-badge{
-      position:absolute; top:-10px; right:12px; background:var(--gold); color:#3a2a06;
-      font-size:10px; font-weight:800; text-transform:uppercase; padding:2px 8px; border-radius:10px;
-    }
-    .price-title{font-weight:700; font-size:15px; margin-bottom:4px;}
-    .price-val{font-size:22px; font-weight:800; color:var(--ink); margin-bottom:12px;}
-    .pay-btn{
-      width:100%; font-family:'Inter', sans-serif; font-size:13px; font-weight:700;
-      padding:8px 12px; border:none; border-radius:5px; background:var(--ink); color:#fff;
-      cursor:pointer; transition:background .15s ease;
-    }
-    .pay-btn:hover{background:var(--ink-soft);}
-    .pay-btn.featured-btn{background:var(--gold); color:#3a2a06;}
-    .pay-btn.featured-btn:hover{background:#d4a030;}
-    .pay-btn:disabled{opacity:.6; cursor:wait;}
- 
-    .notes-grid{
-      display:grid; grid-template-columns:repeat(auto-fill, minmax(280px,1fr)); gap:22px 18px;
-      max-width:1100px; margin:0 auto;
-    }
-    .note{
-      background:var(--paper); padding:16px 16px 14px; border-radius:2px;
-      box-shadow:0 8px 16px rgba(0,0,0,.32); position:relative; min-height:180px;
-      display:flex; flex-direction:column;
-    }
-    .note::before{
-      content:''; position:absolute; top:-9px; left:50%; transform:translateX(-50%);
-      width:14px; height:14px; border-radius:50%; box-shadow:0 3px 5px var(--pin-shadow);
-    }
-    .note .day-idx{
-      font-family:'JetBrains Mono', monospace; font-size:11px; font-weight:700;
-      color:var(--ink-soft); letter-spacing:.04em; margin-bottom:4px;
-    }
-    .meta-tag{
-      display:block; font-size:11px; font-weight:700; color:var(--ink); margin-bottom:2px;
-    }
-    .pillar-tag{
-      display:inline-block; font-size:10px; font-weight:800; text-transform:uppercase;
-      letter-spacing:.04em; padding:3px 9px; border-radius:9px; color:#fff; margin-bottom:8px;
-    }
-    .pillar-tag.education{background:#2f6fb0;}
-    .pillar-tag.storytelling{background:#3fa15a;}
-    .pillar-tag.vente{background:#d64545;}
-    .pillar-tag.viralite{background:#e8842e;}
- 
-    .block-label{
-      font-size:10.5px; font-weight:800; text-transform:uppercase; letter-spacing:.05em;
-      color:var(--ink-soft); margin:9px 0 3px;
-    }
-    .hook-text{
-      font-size:13.5px; font-weight:700; color:var(--ink); line-height:1.4;
-      background:#fff6d9; padding:6px 8px; border-radius:4px; border-left:3px solid var(--gold);
-    }
-    .concept-text{font-size:12.5px; line-height:1.5; color:var(--ink-soft);}
-    .structure-list{margin:2px 0 0; padding-left:16px; font-size:12.5px; line-height:1.55; color:var(--ink-soft);}
-    .structure-list li{margin-bottom:2px;}
-    .cta-text{
-      font-size:12.5px; font-weight:700; color:var(--ink); background:#eee9dd;
-      padding:6px 8px; border-radius:4px; margin-top:2px;
-    }
-    .format-line{font-size:12px; color:var(--ink-soft); font-weight:600;}
-    .note-head{display:flex; justify-content:space-between; align-items:flex-start; gap:8px;}
-    .card-copy-btn{
-      background:none; border:none; cursor:pointer; font-size:15px; padding:2px 4px;
-      border-radius:5px; color:var(--ink-soft); line-height:1; flex-shrink:0;
-    }
-    .card-copy-btn:hover{background:#eee9dd; color:var(--ink);}
-    .platform-tags{display:flex; flex-wrap:wrap; gap:5px; margin-bottom:8px;}
-    .ptag{font-size:10.5px; font-weight:700; padding:3px 8px; border-radius:10px; color:#fff; text-transform:uppercase; letter-spacing:.03em;}
-    .ptag.instagram{background:var(--ig);} .ptag.tiktok{background:var(--tiktok);}
-    .ptag.youtube{background:var(--yt);} .ptag.linkedin{background:var(--li);}
- 
-    .toolbar{max-width:1100px; margin:0 auto 16px; display:flex; justify-content:flex-end; gap:10px;}
-    .copy-btn{
-      font-family:'Inter'; font-size:12.5px; font-weight:700; background:rgba(250,246,236,.9);
-      border:none; border-radius:6px; padding:8px 14px; cursor:pointer; color:var(--ink);
-    }
-    .copy-btn:hover{background:#fff;}
-    .loading-wrap{text-align:center; color:var(--paper); font-weight:600; font-size:14px; padding:30px 0;}
- 
-    @media (max-width:480px){
-      .board-wrap{padding:20px 12px 30px;}
-      .card-form{padding:18px 16px 16px;}
-    }
-  </style>
-</head>
-<body>
- 
-<div class="board-wrap">
-  <div class="board-header">
-    <h1 class="board-title">📌 Le Planificateur</h1>
-    <p class="board-sub">Ta niche, tes plateformes, 30 secondes plus tard : tes idées de contenu prêtes à tourner.</p>
-  </div>
- 
-  <div class="card-form">
-    <div class="form-row">
-      <label class="form-label" for="niche">Ta niche / ton sujet</label>
-      <input class="form-input" id="niche" placeholder="ex : coaching sportif pour débutants, cuisine végétarienne..." />
-    </div>
- 
-    <div class="form-row">
-      <label class="form-label">Plateformes</label>
-      <div class="chip-row" id="chipRow">
-        <div class="chip on" data-p="instagram"><span class="chip-dot"></span>Instagram</div>
-        <div class="chip on" data-p="tiktok"><span class="chip-dot"></span>TikTok</div>
-        <div class="chip" data-p="youtube"><span class="chip-dot"></span>YouTube</div>
-        <div class="chip" data-p="linkedin"><span class="chip-dot"></span>LinkedIn</div>
-      </div>
-    </div>
- 
-    <div class="secondary-params">
-      <div class="form-row" style="display:flex; gap:14px; flex-wrap:wrap; margin-bottom:10px;">
-        <div style="flex:1; min-width:130px;">
-          <label class="form-label-sm" for="tone">Ton</label>
-          <select class="form-select-sm" id="tone">
-            <option>Fun et décontracté</option>
-            <option>Expert et pédagogue</option>
-            <option>Inspirant et motivant</option>
-            <option>Direct et sans filtre</option>
-          </select>
-        </div>
-        <div style="flex:1; min-width:130px;">
-          <label class="form-label-sm" for="objective">Objectif</label>
-          <select class="form-select-sm" id="objective">
-            <option value="balanced" selected>⚡ Équilibré (Recommandé)</option>
-            <option value="Storytelling / Confiance">📖 Storytelling / Confiance</option>
-            <option value="Vente / Conversion">🎯 Vente / Conversion</option>
-            <option value="Éducation / Expertise">💡 Éducation / Expertise</option>
-            <option value="Viralité / Engagement">🔥 Viralité / Engagement</option>
-          </select>
-        </div>
-      </div>
-    </div>
- 
-    <!-- Grille des Offres -->
-    <div class="pricing-grid">
-      <div class="price-card">
-        <div class="price-title">🆓 Démo</div>
-        <div class="price-val">Gratuit</div>
-        <button class="pay-btn" id="btnFree">Générer 1 idée</button>
-      </div>
- 
-      <div class="price-card">
-        <div class="price-title">🚀 Pack Starter</div>
-        <div class="price-val">2,99 €</div>
-        <button class="pay-btn" id="btnStarter">Acheter 5 idées</button>
-      </div>
- 
-      <div class="price-card featured">
-        <span class="price-badge">Recommandé</span>
-        <div class="price-title">🔥 Pack Pro</div>
-        <div class="price-val">5,99 €</div>
-        <button class="pay-btn featured-btn" id="btnPremium">Acheter 14 idées</button>
-      </div>
-    </div>
- 
-    <div class="form-bottom" style="justify-content:center;">
-      <span id="errMsg" class="err-msg"></span>
-    </div>
-  </div>
- 
-  <div class="toolbar" id="toolbar" style="display:none;">
-    <button class="copy-btn" id="copyBtn">Copier tout le texte</button>
-  </div>
- 
-  <div id="resultsZone"></div>
-</div>
- 
 <script>
 (function(){
   const chips = document.querySelectorAll('.chip');
@@ -299,16 +9,12 @@
   const copyBtn = document.getElementById('copyBtn');
   const allPayBtns = () => document.querySelectorAll('.pay-btn');
  
-  const PRICE_STARTER = 'price_1U0jQuAJrUXZ5lo7f6juLGoR';
-  const PRICE_PREMIUM = 'price_1U0jRUAJrUXZ5lo7qFS1CDPv';
- 
   let lastIdeas = [];
  
   function selectedPlatforms(){
     return Array.from(chips).filter(c => c.classList.contains('on')).map(c => c.dataset.p);
   }
  
-  // Remet à jour l'état visuel des chips de plateforme à partir d'une liste (ex: après retour Stripe)
   function setPlatforms(list){
     if(!list || !list.length) return;
     chips.forEach(c => {
@@ -419,7 +125,7 @@
     }
   }
  
-  async function checkout(priceId, eventName, count){
+  async function checkout(packType, eventName, count){
     const niche = document.getElementById('niche').value.trim();
     if(!niche){ renderError('Entre d\'abord ta niche ci-dessus.'); return; }
  
@@ -434,11 +140,10 @@
     allPayBtns().forEach(b => b.disabled = true);
  
     try{
-      // On transmet TOUS les choix (pas juste la niche) pour qu'ils soient restaurés après paiement
       const res = await fetch("/api/create-checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ priceId, niche, count, platforms, tone, objective })
+        body: JSON.stringify({ packType, niche, count, platforms, tone, objective })
       });
       const data = await res.json();
  
@@ -466,10 +171,10 @@
   }
  
   document.getElementById('btnFree').addEventListener('click', () => generateIdeas("1"));
-  document.getElementById('btnStarter').addEventListener('click', () => checkout(PRICE_STARTER, 'starter_clicked', '5'));
-  document.getElementById('btnPremium').addEventListener('click', () => checkout(PRICE_PREMIUM, 'premium_clicked', '14'));
+  // On passe directement 'starter' ou 'pro' ici
+  document.getElementById('btnStarter').addEventListener('click', () => checkout('starter', 'starter_clicked', '5'));
+  document.getElementById('btnPremium').addEventListener('click', () => checkout('pro', 'premium_clicked', '14'));
  
-  // Au retour de Stripe : on restaure TOUS les choix (plateformes, ton, objectif) avant de générer
   window.addEventListener('DOMContentLoaded', () => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('success') === 'true') {
@@ -487,7 +192,6 @@
  
         generateIdeas(urlCount);
  
-        // Nettoie l'URL pour éviter une double génération si la page est rechargée
         window.history.replaceState({}, document.title, window.location.pathname);
       }
     }
@@ -503,7 +207,3 @@
   });
 })();
 </script>
- 
-</body>
-</html>
- 
