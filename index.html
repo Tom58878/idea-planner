@@ -460,7 +460,26 @@
       `📱 Plateformes : ${(idea.platforms||[]).join(', ')}\n`;
   }
  
-  document.getElementById('btnFree').addEventListener('click', () => generateIdeas("1"));
+  document.getElementById('btnFree').addEventListener('click', () => {
+    // Passe-droit admin pour toi
+    const isAdmin = localStorage.getItem('is_admin') === 'true';
+
+    if (!isAdmin) {
+      const lastGen = localStorage.getItem('last_free_gen');
+      const now = new Date().getTime();
+      const twentyFourHours = 24 * 60 * 60 * 1000;
+
+      if (lastGen && (now - lastGen < twentyFourHours)) {
+        const hoursLeft = Math.ceil((twentyFourHours - (now - lastGen)) / (1000 * 60 * 60));
+        renderError(`Démo gratuite déjà utilisée. Revenez dans ${hoursLeft}h ou choisissez un pack !`);
+        return;
+      }
+
+      localStorage.setItem('last_free_gen', now);
+    }
+
+    generateIdeas("1");
+  });
   document.getElementById('btnStarter').addEventListener('click', () => checkout('starter', 'starter_clicked', '5'));
   document.getElementById('btnPremium').addEventListener('click', () => checkout('pro', 'premium_clicked', '14'));
  
