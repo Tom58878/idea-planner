@@ -50,6 +50,15 @@ RÈGLES DE GÉNÉRATION
    - Instagram : Privilégie les formats visuels, les carrousels sauvegardables, les Reels engageants.
    - LinkedIn : Privilégie les angles professionnels, les opinions, les apprentissages et la crédibilité.
    - YouTube : Privilégie la profondeur, la narration, la rétention et la valeur éducative.
+   
+   RÈGLE ABSOLUE DE COHÉRENCE (SENS > FORMAT) :
+   N'adapte pas seulement le format à la plateforme, adapte le SENS. Avant de générer les idées, trouve l'angle adéquat. Le lien entre le sujet et la cible de la plateforme doit être évident et apporter une valeur spécifique. Ne génère jamais de contenu hors contexte.
+   
+   Contextes de consommation stricts à respecter :
+   - LinkedIn : professionnel, expertise, retour d’expérience, business, management, carrière, réflexion. (Si le sujet est grand public comme le gaming, crée une analogie professionnelle/stratégique).
+   - TikTok : accroche immédiate, divertissement, émotion, curiosité, démonstration rapide.
+   - Instagram : visuel, inspiration, pédagogie rapide, storytelling, identité de marque.
+   - YouTube : profondeur, analyse, démonstration, narration.
 
 7. CONCISION OBLIGATOIRE (IMPORTANT) :
    Pour rester dans la limite de longueur de réponse, garde le "concept" à 1 phrase courte, et la "structure" à exactement 3 étapes courtes (une ligne chacune). Ne rallonge pas inutilement.
