@@ -15,7 +15,11 @@ module.exports = async (req, res) => {
     return res.status(400).json({ error: 'Niche et plateformes requises.' });
   }
 
-  const targetCount = parseInt(count, 10) || 1;
+  // 🔒 Sécurité : On autorise uniquement les quotas officiels des packs (1, 5 ou 14)
+  const requestedCount = parseInt(count, 10) || 1;
+  const allowedCounts = [1, 5, 14];
+  const targetCount = allowedCounts.includes(requestedCount) ? requestedCount : 1;
+
   const isBalanced = !objective || objective === 'balanced';
 
   let objectiveInstruction = "";
@@ -70,8 +74,8 @@ RÈGLES DE GÉNÉRATION
    - Ne coupe JAMAIS une phrase, un mot ou une idée en cours.
    - Chaque hook, concept, étape et CTA doit être autonome et terminé.
    - Si tu manques de place, raccourcis les phrases AVANT de les couper.
-   - Il est strictement interdit de terminer un champ par "..." ou par une phrase incom
-
+   - Il est strictement interdit de terminer un champ par "..." ou par une phrase incomplète.
+   
 Format de sortie JSON obligatoire :
 {
   "ideas": [
