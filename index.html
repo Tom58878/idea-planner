@@ -467,54 +467,70 @@
       `📱 Plateformes : ${(idea.platforms || []).join(', ')}\n`;
   }
 
+  window.addEventListener('DOMContentLoaded', () => {
+
   // 1. Bouton Démo gratuite
-  document.getElementById('btnFree').addEventListener('click', () => {
-    const lastGen = localStorage.getItem('last_free_gen');
-    const now = new Date().getTime();
-    const twentyFourHours = 24 * 60 * 60 * 1000;
+  const btnFree = document.getElementById('btnFree');
+  if (btnFree) {
+    btnFree.addEventListener('click', () => {
+      const lastGen = localStorage.getItem('last_free_gen');
+      const now = new Date().getTime();
+      const twentyFourHours = 24 * 60 * 60 * 1000;
 
-    if (lastGen && (now - lastGen < twentyFourHours)) {
-      const hoursLeft = Math.ceil((twentyFourHours - (now - lastGen)) / (1000 * 60 * 60));
-      renderError(`Démo gratuite déjà utilisée. Revenez dans ${hoursLeft}h ou choisissez un pack !`);
-      return;
-    }
+      if (lastGen && (now - lastGen < twentyFourHours)) {
+        const hoursLeft = Math.ceil((twentyFourHours - (now - lastGen)) / (1000 * 60 * 60));
+        renderError(`Démo gratuite déjà utilisée. Revenez dans ${hoursLeft}h ou choisissez un pack !`);
+        return;
+      }
 
-    localStorage.setItem('last_free_gen', now);
-    generateIdeas("1");
-  });
+      localStorage.setItem('last_free_gen', now);
+      generateIdeas("1");
+    });
+  }
 
   // 2. Boutons de paiement
-  document.getElementById('btnStarter').addEventListener('click', () => checkout('starter', 'starter_clicked', '5'));
-  document.getElementById('btnPremium').addEventListener('click', () => checkout('pro', 'premium_clicked', '14'));
+  const btnStarter = document.getElementById('btnStarter');
+  if (btnStarter) {
+    btnStarter.addEventListener('click', () => checkout('starter', 'starter_clicked', '5'));
+  }
+
+  const btnPremium = document.getElementById('btnPremium');
+  if (btnPremium) {
+    btnPremium.addEventListener('click', () => checkout('pro', 'premium_clicked', '14'));
+  }
 
   // 3. Gestion URL / Stripe Success
-  window.addEventListener('DOMContentLoaded', () => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('success') === 'true') {
-      const urlNiche = params.get('niche') || '';
-      const urlCount = params.get('count') || '5';
-      const urlPlatforms = (params.get('platforms') || '').split(',').filter(Boolean);
-      const urlTone = params.get('tone') || '';
-      const urlObjective = params.get('objective') || 'balanced';
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('success') === 'true') {
+    const urlNiche = params.get('niche') || '';
+    const urlCount = params.get('count') || '5';
+    const urlPlatforms = (params.get('platforms') || '').split(',').filter(Boolean);
+    const urlTone = params.get('tone') || '';
+    const urlObjective = params.get('objective') || 'balanced';
  
-      if (urlNiche) {
-        document.getElementById('niche').value = urlNiche;
-        setPlatforms(urlPlatforms);
-        if (urlTone) document.getElementById('tone').value = urlTone;
-        document.getElementById('objective').value = urlObjective;
+    if (urlNiche) {
+      const nicheInput = document.getElementById('niche');
+      if (nicheInput) nicheInput.value = urlNiche;
+      
+      setPlatforms(urlPlatforms);
+      
+      const toneInput = document.getElementById('tone');
+      if (toneInput && urlTone) toneInput.value = urlTone;
+      
+      const objInput = document.getElementById('objective');
+      if (objInput) objInput.value = urlObjective;
  
-        generateIdeas(urlCount);
- 
-        window.history.replaceState({}, document.title, window.location.pathname);
-      }
+      generateIdeas(urlCount);
+      window.history.replaceState({}, document.title, window.location.pathname);
     }
-  });
+  }
  
-  // 4. Bouton de copie (Sécurisé pour éviter les crashs)
+  // 4. Bouton de copie
   const copyBtn = document.getElementById('copyBtn');
   if (copyBtn) {
     copyBtn.addEventListener('click', () => {
-      const tone = document.getElementById('tone').value;
+      const toneInput = document.getElementById('tone');
+      const tone = toneInput ? toneInput.value : '';
       const text = lastIdeas.map((idea, i) => `JOUR ${i+1}\n` + ideaToText(idea, tone)).join('\n---\n\n');
       navigator.clipboard.writeText(text).then(() => {
         copyBtn.textContent = 'Copié ✓';
@@ -522,8 +538,8 @@
       });
     });
   }
-})();
-</script>
 
+});
+</script>
 </body>
 </html>
