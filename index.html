@@ -478,7 +478,7 @@
    const btnFree = document.getElementById('btnFree');
   if (btnFree) {
     btnFree.addEventListener('click', () => {
-    /*  const lastGen = localStorage.getItem('last_free_gen');
+      const lastGen = localStorage.getItem('last_free_gen');
       const now = new Date().getTime();
       const twentyFourHours = 24 * 60 * 60 * 1000;
 
@@ -489,7 +489,7 @@
       }
 
       localStorage.setItem('last_free_gen', now); 
-      */
+      
       generateIdeas("1");
     });
   }
