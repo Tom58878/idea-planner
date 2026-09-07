@@ -488,9 +488,11 @@
         return;
       }
 
+     // 🛡️ Sécurité anti-spam : verrouille le bouton instantanément
+      btnFree.disabled = true;
       localStorage.setItem('last_free_gen', now); 
       
-      generateIdeas("1");
+      await generateIdeas("1");
     });
   }
 
