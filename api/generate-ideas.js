@@ -44,21 +44,23 @@ RÈGLES DE GÉNÉRATION
 5. ANTI-CONTENU GÉNÉRIQUE :
    Ne génère JAMAIS d'idées vagues. Chaque idée doit avoir un angle précis, une situation concrète et une valeur claire et actionnable pour l'audience.
 
-6. PLATEFORMES ET BONNES PRATIQUES :
-   - Limite strictement aux plateformes demandées : [${platforms.join(', ')}].
-   - TikTok : Privilégie les hooks rapides, l'attention dans les premières secondes, les formats dynamiques.
-   - Instagram : Privilégie les formats visuels, les carrousels sauvegardables, les Reels engageants.
-   - LinkedIn : Privilégie les angles professionnels, les opinions, les apprentissages et la crédibilité.
-   - YouTube : Privilégie la profondeur, la narration, la rétention et la valeur éducative.
+6. PLATEFORMES ET ADAPTATION INTELLIGENTE (SENS > FORMAT) :
+   - Limite strictement les idées aux plateformes demandées : [${platforms.join(', ')}].
+   - RÈGLE ABSOLUE : N'adapte pas seulement le format, adapte le SENS. Le sujet initial (ex: un jeu vidéo, un loisir) n'est qu'un point de départ.
    
-   RÈGLE ABSOLUE DE COHÉRENCE (SENS > FORMAT) :
-   N'adapte pas seulement le format à la plateforme, adapte le SENS. Avant de générer les idées, trouve l'angle adéquat. Le lien entre le sujet et la cible de la plateforme doit être évident et apporter une valeur spécifique. Ne génère jamais de contenu hors contexte.
+   MÉTHODE DE TRAITEMENT OBLIGATOIRE :
+   - SUJET → AUDIENCE CIBLE → ANGLE STRATÉGIQUE → VALEUR MÉTIER → CONTENU.
+   - Pour LinkedIn : Interdiction absolue de faire un guide ou un conseil sur le loisir lui-même. Tu dois OBLIGATOIREMENT l'utiliser comme une métaphore, un miroir ou un cas d'école business (management, stratégie, leadership, négociation).
    
-   Contextes de consommation stricts à respecter :
-   - LinkedIn : professionnel, expertise, retour d’expérience, business, management, carrière, réflexion. (Si le sujet est grand public comme le gaming, crée une analogie professionnelle/stratégique).
-   - TikTok : accroche immédiate, divertissement, émotion, curiosité, démonstration rapide.
-   - Instagram : visuel, inspiration, pédagogie rapide, storytelling, identité de marque.
-   - YouTube : profondeur, analyse, démonstration, narration.
+   EXEMPLE CONCRET POUR LINKEDIN :
+   - ❌ MAUVAIS : "Comment optimiser sa stratégie dans Civilization 5."
+   - ✔️ BON : "Ce que la gestion des alliances dans Civilization 5 nous apprend sur la négociation avec les parties prenantes en entreprise."
+   
+   CONTEXTES DE CONSOMMATION PAR PLATEFORME :
+   - LinkedIn : Professionnel, expertise, retour d'expérience, business, management, carrière, réflexion.
+   - TikTok : Accroche immédiate, divertissement, émotion, curiosité, démonstration rapide.
+   - Instagram : Visuel, inspiration, pédagogie rapide, storytelling, identité de marque.
+   - YouTube : Profondeur, analyse, démonstration, narration.
 
 7. CONCISION OBLIGATOIRE (IMPORTANT) :
    Pour rester dans la limite de longueur de réponse, garde le "concept" à 1 phrase courte, et la "structure" à exactement 3 étapes courtes (une ligne chacune). Ne rallonge pas inutilement.
