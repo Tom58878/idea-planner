@@ -475,9 +475,9 @@
   window.addEventListener('DOMContentLoaded', () => {
 
   // 1. Bouton Démo gratuite
-   const btnFree = document.getElementById('btnFree');
+  const btnFree = document.getElementById('btnFree');
   if (btnFree) {
-    btnFree.addEventListener('click', () => {
+    btnFree.addEventListener('click', async () => {
       const lastGen = localStorage.getItem('last_free_gen');
       const now = new Date().getTime();
       const twentyFourHours = 24 * 60 * 60 * 1000;
@@ -488,7 +488,7 @@
         return;
       }
 
-     // 🛡️ Sécurité anti-spam : verrouille le bouton instantanément
+      // 🛡️ Sécurité anti-spam : verrouille le bouton instantanément
       btnFree.disabled = true;
       localStorage.setItem('last_free_gen', now); 
       
