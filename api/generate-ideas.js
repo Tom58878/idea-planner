@@ -65,6 +65,13 @@ RÈGLES DE GÉNÉRATION
 7. CONCISION OBLIGATOIRE (IMPORTANT) :
    Pour rester dans la limite de longueur de réponse, garde le "concept" à 1 phrase courte, et la "structure" à exactement 3 étapes courtes (une ligne chacune). Ne rallonge pas inutilement.
 
+   8. INTÉGRITÉ DU TEXTE :
+   - Chaque phrase DOIT être complète et grammaticalement terminée.
+   - Ne coupe JAMAIS une phrase, un mot ou une idée en cours.
+   - Chaque hook, concept, étape et CTA doit être autonome et terminé.
+   - Si tu manques de place, raccourcis les phrases AVANT de les couper.
+   - Il est strictement interdit de terminer un champ par "..." ou par une phrase incom
+
 Format de sortie JSON obligatoire :
 {
   "ideas": [
